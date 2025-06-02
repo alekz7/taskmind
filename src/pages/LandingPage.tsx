@@ -11,8 +11,21 @@ const LandingPage: React.FC = () => {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-accent-50 opacity-70"></div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="text-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Logo and Auth Buttons */}
+          <div className="flex justify-end items-center py-4 space-x-4">
+            <Link to="/login">
+              <Button variant="ghost">Sign in</Button>
+            </Link>
+            <Link to="/register">
+              <Button variant="primary">Sign up</Button>
+            </Link>
+          </div>
+          <div className="absolute top-20 right-8">
+            <img src="/boltLogo.jpg" alt="Bolt Logo" className="w-12 h-12" />
+          </div>
+          
+          <div className="text-center py-24 md:py-32">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
