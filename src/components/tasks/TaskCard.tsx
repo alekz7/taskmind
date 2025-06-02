@@ -1,0 +1,137 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Clock, Calendar, CheckCircle2, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { Task } from '../../types';
+import Button from '../ui/Button';
+
+interface TaskCardProps {
+  task: Task;
+  onEdit: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
+  onComplete: (taskId: string) => void;
+  isDraggable?: boolean;
+}
+
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  onEdit,
+  onDelete,
+  onComplete,
+  isDraggable = false,
+}) => {
+  const priorityColors = {
+    low: 'bg-green-100 text-green-800',
+    medium: 'bg-yellow-100 text-yellow-800',
+    high: 'bg-red-100 text-red-800',
+  };
+
+  const statusColors = {
+    'pending': 'bg-gray-100 text-gray-800',
+    'in-progress': 'bg-blue-100 text-blue-800',
+    'completed': 'bg-green-100 text-green-800',
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className={`bg-white rounded-lg shadow-md p-4 mb-3 border-l-4 ${
+        task.priority === 'high' 
+          ? 'border-error-500' 
+          : task.priority === 'medium' 
+            ? 'border-warning-500' 
+            : 'border-success-500'
+      } ${isDraggable ? 'cursor-grab active:cursor-grabbing' : ''}`}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <h3 className={`font-medium ${task.status === 'completed' ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+          {task.title}
+        </h3>
+        <div className="flex space-x-1">
+          <span className={`text-xs px-2 py-1 rounded-full ${priorityColors[task.priority]}`}>
+            {task.priority}
+          </span>
+          <span className={`text-xs px-2 py-1 rounded-full ${statusColors[task.status]}`}>
+            {task.status}
+          </span>
+        </div>
+      </div>
+      
+      {task.description && (
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
+      )}
+      
+      <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+        {task.dueDate && (
+          <div className="flex items-center">
+            <Calendar size={14} className="mr-1" />
+            <span>{format(new Date(task.dueDate), 'MMM d, yyyy')}</span>
+          </div>
+        )}
+        
+        {task.estimatedTime && (
+          <div className="flex items-center">
+            <Clock size={14} className="mr-1" />
+            <span>{task.estimatedTime} min</span>
+          </div>
+        )}
+        
+        {task.category && (
+          <div className="px-2 py-0.5 bg-gray-100 rounded-full">
+            {task.category}
+          </div>
+        )}
+      </div>
+      
+      <div className="flex justify-between">
+        {task.status !== 'completed' ? (
+          <Button
+            variant="success"
+            size="xs"
+            leftIcon={<CheckCircle2 size={14} />}
+            onClick={() => onComplete(task.id)}
+          >
+            Complete
+          </Button>
+        ) : (
+          <div className="text-xs text-gray-500 flex items-center">
+            <CheckCircle2 size={14} className="mr-1 text-success-500" />
+            Completed
+          </div>
+        )}
+        
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            leftIcon={<Edit size={14} />}
+            onClick={() => onEdit(task.id)}
+          >
+            Edit
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="xs"
+            leftIcon={<Trash2 size={14} />}
+            onClick={() => onDelete(task.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      </div>
+      
+      {task.priority === 'high' && task.status !== 'completed' && (
+        <div className="mt-2 flex items-center text-xs text-error-500">
+          <AlertTriangle size={14} className="mr-1" />
+          AI suggests completing this high priority task soon
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+export default TaskCard;

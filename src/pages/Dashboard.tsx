@@ -1,0 +1,268 @@
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { format } from 'date-fns';
+import { Plus, Clock, Sparkles, Calendar, Layout, BarChart } from 'lucide-react';
+
+import { useTaskStore } from '../store/taskStore';
+import { useAISuggestionStore } from '../store/aiSuggestionStore';
+import { Task } from '../types';
+
+import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import TaskList from '../components/tasks/TaskList';
+import TaskForm from '../components/tasks/TaskForm';
+import AISuggestionList from '../components/ai/AISuggestionList';
+
+const Dashboard: React.FC = () => {
+  const { tasks, addTask, updateTask, deleteTask, completeTask } = useTaskStore();
+  const { 
+    suggestions, 
+    generateSuggestions, 
+    applySuggestion, 
+    dismissSuggestion,
+    isLoading: suggestionsLoading 
+  } = useAISuggestionStore();
+  
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  
+  // Filter tasks
+  const today = new Date().setHours(0, 0, 0, 0);
+  const todayTasks = tasks.filter(task => 
+    task.status !== 'completed' && 
+    (task.dueDate ? new Date(task.dueDate).setHours(0, 0, 0, 0) <= today : true)
+  );
+  
+  const upcomingTasks = tasks.filter(task => 
+    task.status !== 'completed' && 
+    (task.dueDate ? new Date(task.dueDate).setHours(0, 0, 0, 0) > today : false)
+  );
+  
+  const completedTasks = tasks.filter(task => task.status === 'completed')
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 5);
+  
+  // Get task being edited
+  const editingTask = editingTaskId ? tasks.find(task => task.id === editingTaskId) : undefined;
+  
+  // Generate AI suggestions
+  useEffect(() => {
+    if (tasks.length > 0) {
+      generateSuggestions(tasks);
+    }
+  }, [tasks.length]);
+  
+  const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+    addTask(taskData);
+    setShowAddTask(false);
+  };
+  
+  const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+    if (editingTaskId) {
+      updateTask(editingTaskId, taskData);
+      setEditingTaskId(null);
+    }
+  };
+  
+  const handleEditTask = (taskId: string) => {
+    setEditingTaskId(taskId);
+    setShowAddTask(false);
+  };
+  
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+  };
+  
+  // Task metrics
+  const totalTasks = tasks.length;
+  const completedTasksCount = tasks.filter(task => task.status === 'completed').length;
+  const completionRate = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
+  const highPriorityCount = tasks.filter(task => task.priority === 'high' && task.status !== 'completed').length;
+  
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            {format(new Date(), 'EEEE, MMMM d, yyyy')}
+          </p>
+        </div>
+        
+        <div className="mt-4 md:mt-0">
+          <Button
+            variant={showAddTask ? 'ghost' : 'primary'}
+            leftIcon={showAddTask ? <Clock size={18} /> : <Plus size={18} />}
+            onClick={() => {
+              setShowAddTask(!showAddTask);
+              setEditingTaskId(null);
+            }}
+          >
+            {showAddTask ? 'Cancel' : 'Add New Task'}
+          </Button>
+        </div>
+      </div>
+      
+      {/* Task Form */}
+      {showAddTask && (
+        <div className="mb-8">
+          <TaskForm
+            onSubmit={handleAddTask}
+            onCancel={() => setShowAddTask(false)}
+          />
+        </div>
+      )}
+      
+      {editingTaskId && (
+        <div className="mb-8">
+          <TaskForm
+            initialTask={editingTask}
+            onSubmit={handleUpdateTask}
+            onCancel={handleCancelEdit}
+          />
+        </div>
+      )}
+      
+      {/* Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-primary-100 text-primary-600">
+                  <BarChart size={24} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Completion Rate</p>
+                  <div className="flex items-baseline">
+                    <p className="text-2xl font-semibold text-gray-900">{completionRate}%</p>
+                    <p className="ml-2 text-sm text-gray-500">
+                      ({completedTasksCount}/{totalTasks} tasks)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-warning-100 text-warning-600">
+                  <Clock size={24} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Today's Tasks</p>
+                  <div className="flex items-baseline">
+                    <p className="text-2xl font-semibold text-gray-900">{todayTasks.length}</p>
+                    <p className="ml-2 text-sm text-gray-500">
+                      tasks remaining
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-3 rounded-full bg-error-100 text-error-600">
+                  <Layout size={24} />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">High Priority</p>
+                  <div className="flex items-baseline">
+                    <p className="text-2xl font-semibold text-gray-900">{highPriorityCount}</p>
+                    <p className="ml-2 text-sm text-gray-500">
+                      tasks need attention
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+      
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Today's Tasks */}
+        <Card className="lg:col-span-1 h-[600px]">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Calendar className="mr-2 h-5 w-5 text-gray-500" />
+              Today's Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[calc(600px-60px)]">
+            <TaskList
+              tasks={todayTasks}
+              title=""
+              emptyMessage="No tasks for today"
+              onEdit={handleEditTask}
+              onDelete={deleteTask}
+              onComplete={completeTask}
+            />
+          </CardContent>
+        </Card>
+        
+        {/* Upcoming Tasks */}
+        <Card className="lg:col-span-1 h-[600px]">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="mr-2 h-5 w-5 text-gray-500" />
+              Upcoming Tasks
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[calc(600px-60px)]">
+            <TaskList
+              tasks={upcomingTasks}
+              title=""
+              emptyMessage="No upcoming tasks"
+              onEdit={handleEditTask}
+              onDelete={deleteTask}
+              onComplete={completeTask}
+            />
+          </CardContent>
+        </Card>
+        
+        {/* AI Suggestions */}
+        <Card className="lg:col-span-1 h-[600px]">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Sparkles className="mr-2 h-5 w-5 text-primary-500" />
+              AI Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[calc(600px-60px)]">
+            <AISuggestionList
+              suggestions={suggestions}
+              isLoading={suggestionsLoading}
+              onApply={applySuggestion}
+              onDismiss={dismissSuggestion}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
