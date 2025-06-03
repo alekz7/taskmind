@@ -8,8 +8,8 @@ const Logo: React.FC<{ className?: string }> = ({ className = "" }) => {
     <img
       src={
         theme === "light"
-          ? "/taskmind/black_circle_360x360.png"
-          : "/taskmind/white_circle_360x360.png"
+          ? "/black_circle_360x360.png"
+          : "/white_circle_360x360.png"
       }
       alt="TaskMind Logo"
       className={`h-8 w-8 ${className}`}
