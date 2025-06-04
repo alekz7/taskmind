@@ -9,10 +9,10 @@ const LandingPage: React.FC = () => {
   const { t } = useTranslation(['landing', 'common']);
 
   return (
-    <div className="bg-white">
+    <div className="bg-white dark:bg-gray-900">
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-accent-50 opacity-70"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-accent-50 dark:from-gray-800 dark:to-primary-950 opacity-70"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="text-center">
@@ -21,12 +21,12 @@ const LandingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight">
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white tracking-tight">
                 <span className="block">{t('hero.title.line1')}</span>
-                <span className="block text-primary-600">{t('hero.title.line2')}</span>
+                <span className="block text-primary-600 dark:text-primary-400">{t('hero.title.line2')}</span>
               </h1>
               
-              <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
+              <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600 dark:text-gray-300">
                 {t('hero.description')}
               </p>
               
@@ -49,11 +49,11 @@ const LandingPage: React.FC = () => {
       </div>
       
       {/* Features Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">{t('features.title')}</h2>
-            <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('features.title')}</h2>
+            <p className="mt-4 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               {t('features.subtitle')}
             </p>
           </div>
@@ -63,96 +63,96 @@ const LandingPage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700"
             >
-              <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mb-4">
-                <Brain className="h-6 w-6 text-primary-600" />
+              <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center mb-4">
+                <Brain className="h-6 w-6 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">{t('features.aiPrioritization.title')}</h3>
-              <p className="mt-2 text-gray-600">{t('features.aiPrioritization.description')}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('features.aiPrioritization.title')}</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">{t('features.aiPrioritization.description')}</p>
             </motion.div>
             
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700"
             >
-              <div className="h-12 w-12 rounded-full bg-secondary-100 flex items-center justify-center mb-4">
-                <BarChart className="h-6 w-6 text-secondary-600" />
+              <div className="h-12 w-12 rounded-full bg-secondary-100 dark:bg-secondary-900 flex items-center justify-center mb-4">
+                <BarChart className="h-6 w-6 text-secondary-600 dark:text-secondary-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">{t('features.productivityInsights.title')}</h3>
-              <p className="mt-2 text-gray-600">{t('features.productivityInsights.description')}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('features.productivityInsights.title')}</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">{t('features.productivityInsights.description')}</p>
             </motion.div>
             
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-100 dark:border-gray-700"
             >
-              <div className="h-12 w-12 rounded-full bg-accent-100 flex items-center justify-center mb-4">
-                <Sparkles className="h-6 w-6 text-accent-600" />
+              <div className="h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center mb-4">
+                <Sparkles className="h-6 w-6 text-accent-600 dark:text-accent-400" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">{t('features.adaptiveLearning.title')}</h3>
-              <p className="mt-2 text-gray-600">{t('features.adaptiveLearning.description')}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{t('features.adaptiveLearning.title')}</h3>
+              <p className="mt-2 text-gray-600 dark:text-gray-300">{t('features.adaptiveLearning.description')}</p>
             </motion.div>
           </div>
         </div>
       </div>
       
       {/* Testimonials */}
-      <div className="py-16 bg-gray-50">
+      <div className="py-16 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">{t('testimonials.title')}</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('testimonials.title')}</h2>
           </div>
           
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold">
+                <div className="h-12 w-12 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-700 dark:text-primary-300 font-bold">
                   JD
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.john.name')}</h4>
-                  <p className="text-sm text-gray-600">{t('testimonials.users.john.role')}</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">{t('testimonials.users.john.name')}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('testimonials.users.john.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">{t('testimonials.users.john.quote')}</p>
+              <p className="text-gray-600 dark:text-gray-300">{t('testimonials.users.john.quote')}</p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-secondary-100 flex items-center justify-center text-secondary-700 font-bold">
+                <div className="h-12 w-12 rounded-full bg-secondary-100 dark:bg-secondary-900 flex items-center justify-center text-secondary-700 dark:text-secondary-300 font-bold">
                   AS
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.alice.name')}</h4>
-                  <p className="text-sm text-gray-600">{t('testimonials.users.alice.role')}</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">{t('testimonials.users.alice.name')}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('testimonials.users.alice.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">{t('testimonials.users.alice.quote')}</p>
+              <p className="text-gray-600 dark:text-gray-300">{t('testimonials.users.alice.quote')}</p>
             </div>
             
-            <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md">
               <div className="flex items-center mb-4">
-                <div className="h-12 w-12 rounded-full bg-accent-100 flex items-center justify-center text-accent-700 font-bold">
+                <div className="h-12 w-12 rounded-full bg-accent-100 dark:bg-accent-900 flex items-center justify-center text-accent-700 dark:text-accent-300 font-bold">
                   MJ
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.michael.name')}</h4>
-                  <p className="text-sm text-gray-600">{t('testimonials.users.michael.role')}</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">{t('testimonials.users.michael.name')}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t('testimonials.users.michael.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">{t('testimonials.users.michael.quote')}</p>
+              <p className="text-gray-600 dark:text-gray-300">{t('testimonials.users.michael.quote')}</p>
             </div>
           </div>
         </div>
       </div>
       
       {/* CTA Section */}
-      <div className="py-16 bg-primary-600">
+      <div className="py-16 bg-primary-600 dark:bg-primary-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2>
           <p className="mt-4 text-xl text-primary-100 max-w-2xl mx-auto">
@@ -185,7 +185,7 @@ const LandingPage: React.FC = () => {
       </div>
       
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300">
+      <footer className="bg-gray-900 dark:bg-black text-gray-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
@@ -231,7 +231,7 @@ const LandingPage: React.FC = () => {
           
           <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center">
-              <Brain className="h-8 w-8 text-primary-500 mr-2" />
+              <Brain className="h-8 w-8 text-primary-500 dark:text-primary-400 mr-2" />
               <span className="text-lg font-bold text-white">{t('common:app.name')}</span>
             </div>
             
