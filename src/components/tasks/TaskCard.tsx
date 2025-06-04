@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Calendar, CheckCircle2, Edit, Trash2, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { Task } from '../../types';
 import Button from '../ui/Button';
 
@@ -20,6 +21,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
   onComplete,
   isDraggable = false,
 }) => {
+  const { t } = useTranslation(['tasks', 'common']);
+
   const priorityColors = {
     low: 'bg-green-100 text-green-800',
     medium: 'bg-yellow-100 text-yellow-800',
@@ -52,10 +55,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
         </h3>
         <div className="flex space-x-1">
           <span className={`text-xs px-2 py-1 rounded-full ${priorityColors[task.priority]}`}>
-            {task.priority}
+            {t(`common:priority.${task.priority}`)}
           </span>
           <span className={`text-xs px-2 py-1 rounded-full ${statusColors[task.status]}`}>
-            {task.status}
+            {t(`common:status.${task.status}`)}
           </span>
         </div>
       </div>
@@ -75,7 +78,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
         {task.estimatedTime && (
           <div className="flex items-center">
             <Clock size={14} className="mr-1" />
-            <span>{task.estimatedTime} min</span>
+            <span>{t('task.estimatedTime', { time: task.estimatedTime })}</span>
           </div>
         )}
         
@@ -94,12 +97,12 @@ const TaskCard: React.FC<TaskCardProps> = ({
             leftIcon={<CheckCircle2 size={14} />}
             onClick={() => onComplete(task.id)}
           >
-            Complete
+            {t('common:actions.complete')}
           </Button>
         ) : (
           <div className="text-xs text-gray-500 flex items-center">
             <CheckCircle2 size={14} className="mr-1 text-success-500" />
-            Completed
+            {t('common:status.completed')}
           </div>
         )}
         
@@ -110,7 +113,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             leftIcon={<Edit size={14} />}
             onClick={() => onEdit(task.id)}
           >
-            Edit
+            {t('common:actions.edit')}
           </Button>
           
           <Button
@@ -119,7 +122,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             leftIcon={<Trash2 size={14} />}
             onClick={() => onDelete(task.id)}
           >
-            Delete
+            {t('common:actions.delete')}
           </Button>
         </div>
       </div>
@@ -127,7 +130,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       {task.priority === 'high' && task.status !== 'completed' && (
         <div className="mt-2 flex items-center text-xs text-error-500">
           <AlertTriangle size={14} className="mr-1" />
-          AI suggests completing this high priority task soon
+          {t('task.highPriorityWarning')}
         </div>
       )}
     </motion.div>
