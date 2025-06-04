@@ -25,6 +25,8 @@
     },
     "aiInsights": {
       "title": "AI Insights",
+      "suggestion": "AI Suggestion",
+      "applied": "Applied",
       "loading": "Generating AI suggestions...",
       "empty": "No AI suggestions available yet",
       "addMore": "Add more tasks to get personalized recommendations"
