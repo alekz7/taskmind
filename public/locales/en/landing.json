@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "title": {
+      "line1": "Transform Your Productivity with",
+      "line2": "AI-Powered Task Planning"
+    },
+    "description": "TaskMind uses advanced AI to organize your tasks, identify priorities, and optimize your workflow based on your personal habits and preferences."
+  },
+  "features": {
+    "title": "Intelligent Features",
+    "subtitle": "TaskMind adapts to your working style and gets smarter the more you use it.",
+    "aiPrioritization": {
+      "title": "AI Task Prioritization",
+      "description": "Our intelligent algorithm analyzes your tasks and automatically prioritizes them based on deadlines, importance, and your work patterns."
+    },
+    "productivityInsights": {
+      "title": "Productivity Insights",
+      "description": "Get personalized insights into your productivity patterns, with suggestions to optimize your workflow and increase efficiency."
+    },
+    "adaptiveLearning": {
+      "title": "Adaptive Learning",
+      "description": "TaskMind learns from your behavior and preferences over time, making increasingly accurate suggestions that align with your working style."
+    }
+  },
+  "testimonials": {
+    "title": "What Our Users Say",
+    "users": {
+      "john": {
+        "name": "John Doe",
+        "role": "Product Manager",
+        "quote": "TaskMind has completely transformed how I manage my team's projects. The AI suggestions are surprisingly accurate and have helped us optimize our workflow."
+      },
+      "alice": {
+        "name": "Alice Smith",
+        "role": "Freelance Designer",
+        "quote": "As a freelancer juggling multiple clients, TaskMind helps me prioritize effectively. I love how it adapts to my working style and suggests optimal time slots."
+      },
+      "michael": {
+        "name": "Michael Johnson",
+        "role": "Software Engineer",
+        "quote": "The productivity insights are game-changing. TaskMind identified that I'm most productive in the morning, so I now schedule my most demanding tasks before noon."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Productivity?",
+    "subtitle": "Join thousands of professionals who use TaskMind to work smarter, not harder.",
+    "button": "Get Started for Free",
+    "features": {
+      "trial": "Free 14-day trial",
+      "noCard": "No credit card required",
+      "cancel": "Cancel anytime"
+    }
+  },
+  "footer": {
+    "sections": {
+      "company": {
+        "title": "TaskMind",
+        "links": {
+          "about": "About",
+          "features": "Features",
+          "pricing": "Pricing",
+          "careers": "Careers"
+        }
+      },
+      "resources": {
+        "title": "Resources",
+        "links": {
+          "blog": "Blog",
+          "help": "Help Center",
+          "guides": "Guides",
+          "api": "API Documentation"
+        }
+      },
+      "legal": {
+        "title": "Legal",
+        "links": {
+          "privacy": "Privacy Policy",
+          "terms": "Terms of Service",
+          "cookie": "Cookie Policy",
+          "gdpr": "GDPR"
+        }
+      },
+      "connect": {
+        "title": "Connect",
+        "links": {
+          "twitter": "Twitter",
+          "linkedin": "LinkedIn",
+          "facebook": "Facebook",
+          "github": "GitHub"
+        }
+      }
+    },
+    "copyright": "© {{year}} TaskMind. All rights reserved."
+  }
+}

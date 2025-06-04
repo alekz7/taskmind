@@ -2,9 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Brain, CheckCircle, BarChart, Sparkles, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import Button from '../components/ui/Button';
 
 const LandingPage: React.FC = () => {
+  const { t } = useTranslation(['landing', 'common']);
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -19,24 +22,24 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight">
-                <span className="block">Transform Your Productivity with</span>
-                <span className="block text-primary-600">AI-Powered Task Planning</span>
+                <span className="block">{t('hero.title.line1')}</span>
+                <span className="block text-primary-600">{t('hero.title.line2')}</span>
               </h1>
               
               <p className="mt-6 max-w-2xl mx-auto text-xl text-gray-600">
-                TaskMind uses advanced AI to organize your tasks, identify priorities, and optimize your workflow based on your personal habits and preferences.
+                {t('hero.description')}
               </p>
               
               <div className="mt-10 flex justify-center gap-4">
                 <Link to="/register">
                   <Button variant="primary" size="lg" rightIcon={<ArrowRight size={18} />}>
-                    Get Started
+                    {t('common:navigation.signUp')}
                   </Button>
                 </Link>
                 
                 <Link to="/login">
                   <Button variant="ghost" size="lg">
-                    Sign In
+                    {t('common:navigation.signIn')}
                   </Button>
                 </Link>
               </div>
@@ -49,9 +52,9 @@ const LandingPage: React.FC = () => {
       <div className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">Intelligent Features</h2>
+            <h2 className="text-3xl font-bold text-gray-900">{t('features.title')}</h2>
             <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-              TaskMind adapts to your working style and gets smarter the more you use it.
+              {t('features.subtitle')}
             </p>
           </div>
           
@@ -65,10 +68,8 @@ const LandingPage: React.FC = () => {
               <div className="h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center mb-4">
                 <Brain className="h-6 w-6 text-primary-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">AI Task Prioritization</h3>
-              <p className="mt-2 text-gray-600">
-                Our intelligent algorithm analyzes your tasks and automatically prioritizes them based on deadlines, importance, and your work patterns.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-900">{t('features.aiPrioritization.title')}</h3>
+              <p className="mt-2 text-gray-600">{t('features.aiPrioritization.description')}</p>
             </motion.div>
             
             <motion.div
@@ -80,10 +81,8 @@ const LandingPage: React.FC = () => {
               <div className="h-12 w-12 rounded-full bg-secondary-100 flex items-center justify-center mb-4">
                 <BarChart className="h-6 w-6 text-secondary-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">Productivity Insights</h3>
-              <p className="mt-2 text-gray-600">
-                Get personalized insights into your productivity patterns, with suggestions to optimize your workflow and increase efficiency.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-900">{t('features.productivityInsights.title')}</h3>
+              <p className="mt-2 text-gray-600">{t('features.productivityInsights.description')}</p>
             </motion.div>
             
             <motion.div
@@ -95,10 +94,8 @@ const LandingPage: React.FC = () => {
               <div className="h-12 w-12 rounded-full bg-accent-100 flex items-center justify-center mb-4">
                 <Sparkles className="h-6 w-6 text-accent-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">Adaptive Learning</h3>
-              <p className="mt-2 text-gray-600">
-                TaskMind learns from your behavior and preferences over time, making increasingly accurate suggestions that align with your working style.
-              </p>
+              <h3 className="text-xl font-semibold text-gray-900">{t('features.adaptiveLearning.title')}</h3>
+              <p className="mt-2 text-gray-600">{t('features.adaptiveLearning.description')}</p>
             </motion.div>
           </div>
         </div>
@@ -108,7 +105,7 @@ const LandingPage: React.FC = () => {
       <div className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">What Our Users Say</h2>
+            <h2 className="text-3xl font-bold text-gray-900">{t('testimonials.title')}</h2>
           </div>
           
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -118,13 +115,11 @@ const LandingPage: React.FC = () => {
                   JD
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">John Doe</h4>
-                  <p className="text-sm text-gray-600">Product Manager</p>
+                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.john.name')}</h4>
+                  <p className="text-sm text-gray-600">{t('testimonials.users.john.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">
-                "TaskMind has completely transformed how I manage my team's projects. The AI suggestions are surprisingly accurate and have helped us optimize our workflow."
-              </p>
+              <p className="text-gray-600">{t('testimonials.users.john.quote')}</p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -133,13 +128,11 @@ const LandingPage: React.FC = () => {
                   AS
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">Alice Smith</h4>
-                  <p className="text-sm text-gray-600">Freelance Designer</p>
+                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.alice.name')}</h4>
+                  <p className="text-sm text-gray-600">{t('testimonials.users.alice.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">
-                "As a freelancer juggling multiple clients, TaskMind helps me prioritize effectively. I love how it adapts to my working style and suggests optimal time slots."
-              </p>
+              <p className="text-gray-600">{t('testimonials.users.alice.quote')}</p>
             </div>
             
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -148,13 +141,11 @@ const LandingPage: React.FC = () => {
                   MJ
                 </div>
                 <div className="ml-4">
-                  <h4 className="font-semibold text-gray-900">Michael Johnson</h4>
-                  <p className="text-sm text-gray-600">Software Engineer</p>
+                  <h4 className="font-semibold text-gray-900">{t('testimonials.users.michael.name')}</h4>
+                  <p className="text-sm text-gray-600">{t('testimonials.users.michael.role')}</p>
                 </div>
               </div>
-              <p className="text-gray-600">
-                "The productivity insights are game-changing. TaskMind identified that I'm most productive in the morning, so I now schedule my most demanding tasks before noon."
-              </p>
+              <p className="text-gray-600">{t('testimonials.users.michael.quote')}</p>
             </div>
           </div>
         </div>
@@ -163,15 +154,15 @@ const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <div className="py-16 bg-primary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white">Ready to Transform Your Productivity?</h2>
+          <h2 className="text-3xl font-bold text-white">{t('cta.title')}</h2>
           <p className="mt-4 text-xl text-primary-100 max-w-2xl mx-auto">
-            Join thousands of professionals who use TaskMind to work smarter, not harder.
+            {t('cta.subtitle')}
           </p>
           
           <div className="mt-8">
             <Link to="/register">
               <Button variant="secondary" size="lg">
-                Get Started for Free
+                {t('cta.button')}
               </Button>
             </Link>
           </div>
@@ -179,15 +170,15 @@ const LandingPage: React.FC = () => {
           <div className="mt-8 flex justify-center space-x-8">
             <div className="flex items-center text-primary-100">
               <CheckCircle className="h-5 w-5 mr-2" />
-              <span>Free 14-day trial</span>
+              <span>{t('cta.features.trial')}</span>
             </div>
             <div className="flex items-center text-primary-100">
               <CheckCircle className="h-5 w-5 mr-2" />
-              <span>No credit card required</span>
+              <span>{t('cta.features.noCard')}</span>
             </div>
             <div className="flex items-center text-primary-100">
               <CheckCircle className="h-5 w-5 mr-2" />
-              <span>Cancel anytime</span>
+              <span>{t('cta.features.cancel')}</span>
             </div>
           </div>
         </div>
@@ -198,42 +189,42 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">TaskMind</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('footer.sections.company.title')}</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">About</a></li>
-                <li><a href="#" className="hover:text-white">Features</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Careers</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.company.links.about')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.company.links.features')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.company.links.pricing')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.company.links.careers')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Resources</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('footer.sections.resources.title')}</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Blog</a></li>
-                <li><a href="#" className="hover:text-white">Help Center</a></li>
-                <li><a href="#" className="hover:text-white">Guides</a></li>
-                <li><a href="#" className="hover:text-white">API Documentation</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.resources.links.blog')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.resources.links.help')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.resources.links.guides')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.resources.links.api')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Legal</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('footer.sections.legal.title')}</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-white">Cookie Policy</a></li>
-                <li><a href="#" className="hover:text-white">GDPR</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.legal.links.privacy')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.legal.links.terms')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.legal.links.cookie')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.legal.links.gdpr')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Connect</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">{t('footer.sections.connect.title')}</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="hover:text-white">Twitter</a></li>
-                <li><a href="#" className="hover:text-white">LinkedIn</a></li>
-                <li><a href="#" className="hover:text-white">Facebook</a></li>
-                <li><a href="#" className="hover:text-white">GitHub</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.connect.links.twitter')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.connect.links.linkedin')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.connect.links.facebook')}</a></li>
+                <li><a href="#" className="hover:text-white">{t('footer.sections.connect.links.github')}</a></li>
               </ul>
             </div>
           </div>
@@ -241,11 +232,11 @@ const LandingPage: React.FC = () => {
           <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center">
               <Brain className="h-8 w-8 text-primary-500 mr-2" />
-              <span className="text-lg font-bold text-white">TaskMind</span>
+              <span className="text-lg font-bold text-white">{t('common:app.name')}</span>
             </div>
             
             <p className="mt-4 md:mt-0 text-sm">
-              &copy; {new Date().getFullYear()} TaskMind. All rights reserved.
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
           </div>
         </div>
