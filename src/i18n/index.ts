@@ -26,6 +26,8 @@ i18n
     
     defaultNS: 'common',
     ns: ['common', 'auth', 'dashboard', 'tasks'],
+    
+    supportedLngs: ['en', 'es', 'de'],
   });
 
 export default i18n;

@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "title": {
+      "line1": "Steigern Sie Ihre Produktivität mit",
+      "line2": "KI-gestützter Aufgabenplanung"
+    },
+    "description": "TaskMind nutzt fortschrittliche KI, um Ihre Aufgaben zu organisieren, Prioritäten zu setzen und Ihren Arbeitsablauf basierend auf Ihren persönlichen Gewohnheiten und Vorlieben zu optimieren."
+  },
+  "features": {
+    "title": "Intelligente Funktionen",
+    "subtitle": "TaskMind passt sich Ihrem Arbeitsstil an und wird intelligenter, je mehr Sie es nutzen.",
+    "aiPrioritization": {
+      "title": "KI-Aufgabenpriorisierung",
+      "description": "Unser intelligenter Algorithmus analysiert Ihre Aufgaben und priorisiert sie automatisch basierend auf Fristen, Wichtigkeit und Ihren Arbeitsmustern."
+    },
+    "productivityInsights": {
+      "title": "Produktivitätseinblicke",
+      "description": "Erhalten Sie personalisierte Einblicke in Ihre Produktivitätsmuster mit Vorschlägen zur Optimierung Ihres Arbeitsablaufs und Steigerung der Effizienz."
+    },
+    "adaptiveLearning": {
+      "title": "Adaptives Lernen",
+      "description": "TaskMind lernt im Laufe der Zeit aus Ihrem Verhalten und Ihren Vorlieben und macht zunehmend genauere Vorschläge, die zu Ihrem Arbeitsstil passen."
+    }
+  },
+  "testimonials": {
+    "title": "Was unsere Nutzer sagen",
+    "users": {
+      "john": {
+        "name": "Johannes Schmidt",
+        "role": "Produktmanager",
+        "quote": "TaskMind hat die Art und Weise, wie ich die Projekte meines Teams verwalte, komplett verändert. Die KI-Vorschläge sind erstaunlich präzise und haben uns geholfen, unseren Arbeitsablauf zu optimieren."
+      },
+      "alice": {
+        "name": "Anna Müller",
+        "role": "Freiberufliche Designerin",
+        "quote": "Als Freiberuflerin mit mehreren Kunden hilft mir TaskMind, effektiv zu priorisieren. Ich liebe, wie es sich an meinen Arbeitsstil anpasst und optimale Zeitfenster vorschlägt."
+      },
+      "michael": {
+        "name": "Michael Weber",
+        "role": "Softwareentwickler",
+        "quote": "Die Produktivitätseinblicke sind bahnbrechend. TaskMind hat erkannt, dass ich morgens am produktivsten bin, also plane ich jetzt meine anspruchsvollsten Aufgaben vor dem Mittag."
+      }
+    }
+  },
+  "cta": {
+    "title": "Bereit, Ihre Produktivität zu steigern?",
+    "subtitle": "Schließen Sie sich Tausenden von Fachleuten an, die TaskMind nutzen, um intelligenter zu arbeiten.",
+    "button": "Kostenlos loslegen",
+    "features": {
+      "trial": "14-tägige kostenlose Testversion",
+      "noCard": "Keine Kreditkarte erforderlich",
+      "cancel": "Jederzeit kündbar"
+    }
+  },
+  "footer": {
+    "sections": {
+      "company": {
+        "title": "TaskMind",
+        "links": {
+          "about": "Über uns",
+          "features": "Funktionen",
+          "pricing": "Preise",
+          "careers": "Karriere"
+        }
+      },
+      "resources": {
+        "title": "Ressourcen",
+        "links": {
+          "blog": "Blog",
+          "help": "Hilfe-Center",
+          "guides": "Anleitungen",
+          "api": "API-Dokumentation"
+        }
+      },
+      "legal": {
+        "title": "Rechtliches",
+        "links": {
+          "privacy": "Datenschutz",
+          "terms": "Nutzungsbedingungen",
+          "cookie": "Cookie-Richtlinie",
+          "gdpr": "DSGVO"
+        }
+      },
+      "connect": {
+        "title": "Verbinden",
+        "links": {
+          "twitter": "Twitter",
+          "linkedin": "LinkedIn",
+          "facebook": "Facebook",
+          "github": "GitHub"
+        }
+      }
+    },
+    "copyright": "© {{year}} TaskMind. Alle Rechte vorbehalten."
+  }
+}

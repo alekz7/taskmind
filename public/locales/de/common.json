@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "TaskMind",
+    "tagline": "KI-gestützte Aufgabenplanung"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "tasks": "Aufgaben",
+    "settings": "Einstellungen",
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "logout": "Abmelden"
+  },
+  "actions": {
+    "create": "Erstellen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "apply": "Anwenden",
+    "dismiss": "Verwerfen",
+    "complete": "Abschließen"
+  },
+  "status": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten",
+    "success": "Erfolgreich",
+    "pending": "Ausstehend",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen"
+  },
+  "priority": {
+    "low": "Niedrig",
+    "medium": "Mittel",
+    "high": "Hoch"
+  }
+}

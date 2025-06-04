@@ -1,0 +1,52 @@
+{
+  "title": "Aufgaben",
+  "subtitle": "Verwalten und organisieren Sie alle Ihre Aufgaben",
+  "newTask": "Neue Aufgabe erstellen",
+  "form": {
+    "title": {
+      "label": "Aufgabentitel",
+      "placeholder": "Aufgabentitel eingeben"
+    },
+    "description": {
+      "label": "Beschreibung",
+      "placeholder": "Aufgabenbeschreibung (optional)"
+    },
+    "dueDate": {
+      "label": "Fälligkeitsdatum"
+    },
+    "estimatedTime": {
+      "label": "Geschätzte Zeit (Minuten)",
+      "placeholder": "30"
+    },
+    "priority": {
+      "label": "Priorität"
+    },
+    "category": {
+      "label": "Kategorie",
+      "placeholder": "z.B. Arbeit, Privat, Studium"
+    }
+  },
+  "filters": {
+    "search": {
+      "placeholder": "Aufgaben suchen..."
+    },
+    "priority": {
+      "title": "Priorität:",
+      "all": "Alle"
+    }
+  },
+  "columns": {
+    "todo": {
+      "title": "Zu erledigen",
+      "empty": "Keine ausstehenden Aufgaben"
+    },
+    "inProgress": {
+      "title": "In Bearbeitung",
+      "empty": "Keine Aufgaben in Bearbeitung"
+    },
+    "completed": {
+      "title": "Abgeschlossen",
+      "empty": "Keine abgeschlossenen Aufgaben"
+    }
+  }
+}

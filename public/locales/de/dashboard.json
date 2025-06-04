@@ -1,0 +1,35 @@
+{
+  "title": "Dashboard",
+  "metrics": {
+    "completionRate": {
+      "title": "Abschlussrate",
+      "tasks": "Aufgaben"
+    },
+    "todayTasks": {
+      "title": "Heutige Aufgaben",
+      "remaining": "ausstehende Aufgaben"
+    },
+    "highPriority": {
+      "title": "Hohe Priorität",
+      "attention": "Aufgaben benötigen Aufmerksamkeit"
+    }
+  },
+  "sections": {
+    "todayTasks": {
+      "title": "Heutige Aufgaben",
+      "empty": "Keine Aufgaben für heute"
+    },
+    "upcomingTasks": {
+      "title": "Anstehende Aufgaben",
+      "empty": "Keine anstehenden Aufgaben"
+    },
+    "aiInsights": {
+      "title": "KI-Einblicke",
+      "suggestion": "KI-Vorschlag",
+      "applied": "Angewendet",
+      "loading": "KI-Vorschläge werden generiert...",
+      "empty": "Noch keine KI-Vorschläge verfügbar",
+      "addMore": "Fügen Sie mehr Aufgaben hinzu, um personalisierte Empfehlungen zu erhalten"
+    }
+  }
+}
