@@ -63,70 +63,70 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 -- Enable RLS
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
-CREATE POLICY "Users can read own data"
-  ON users
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = id);
+-- CREATE POLICY "Users can read own data"
+--   ON users
+--   FOR SELECT
+--   TO authenticated
+--   USING (auth.uid() = id);
 
-CREATE POLICY "Users can update own data"
-  ON users
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = id);
+-- CREATE POLICY "Users can update own data"
+--   ON users
+--   FOR UPDATE
+--   TO authenticated
+--   USING (auth.uid() = id);
 
-CREATE POLICY "Users can read own categories"
-  ON categories
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can read own categories"
+--   ON categories
+--   FOR SELECT
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own categories"
-  ON categories
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "Users can insert own categories"
+--   ON categories
+--   FOR INSERT
+--   TO authenticated
+--   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own categories"
-  ON categories
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can update own categories"
+--   ON categories
+--   FOR UPDATE
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own categories"
-  ON categories
-  FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can delete own categories"
+--   ON categories
+--   FOR DELETE
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can read own tasks"
-  ON tasks
-  FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can read own tasks"
+--   ON tasks
+--   FOR SELECT
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own tasks"
-  ON tasks
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+-- CREATE POLICY "Users can insert own tasks"
+--   ON tasks
+--   FOR INSERT
+--   TO authenticated
+--   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own tasks"
-  ON tasks
-  FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can update own tasks"
+--   ON tasks
+--   FOR UPDATE
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can delete own tasks"
-  ON tasks
-  FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
+-- CREATE POLICY "Users can delete own tasks"
+--   ON tasks
+--   FOR DELETE
+--   TO authenticated
+--   USING (auth.uid() = user_id);
 
 -- Create updated_at triggers
 CREATE OR REPLACE FUNCTION update_updated_at()
