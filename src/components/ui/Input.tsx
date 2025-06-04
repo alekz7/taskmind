@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -21,6 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     id,
     ...props 
   }, ref) => {
+    const { t } = useTranslation();
     const inputId = id || `input-${Math.random().toString(36).substring(2, 9)}`;
     
     // Base classes
