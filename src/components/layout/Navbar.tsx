@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Brain, Menu, X, LogOut, Settings, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import Button from '../ui/Button';
 import ThemeToggle from '../ui/ThemeToggle';
+import LanguageSelector from '../ui/LanguageSelector';
 import Logo from '../ui/Logo';
 
 const Navbar: React.FC = () => {
+  const { t } = useTranslation(['common']);
   const { isAuthenticated, user, logout } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
@@ -21,7 +24,7 @@ const Navbar: React.FC = () => {
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <Brain className="h-8 w-8 text-primary-500" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">TaskMind</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">{t('app.name')}</span>
             </Link>
           </div>
           
@@ -33,19 +36,20 @@ const Navbar: React.FC = () => {
                   to="/dashboard" 
                   className="text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Link>
                 <Link 
                   to="/tasks" 
                   className="text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Tasks
+                  {t('navigation.tasks')}
                 </Link>
                 
                 <div className="relative ml-3">
                   <div className="flex items-center space-x-3">
                     <Logo className="hidden sm:block" />
                     <ThemeToggle />
+                    <LanguageSelector />
                     <Link to="/settings" className="text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400">
                       <Settings size={20} />
                     </Link>
@@ -55,7 +59,7 @@ const Navbar: React.FC = () => {
                       leftIcon={<LogOut size={16} />}
                       onClick={() => logout()}
                     >
-                      Logout
+                      {t('navigation.logout')}
                     </Button>
                     <div className="flex items-center space-x-2">
                       <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center text-primary-700 dark:text-primary-300 font-medium">
@@ -70,11 +74,12 @@ const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Logo className="hidden sm:block" />
                 <ThemeToggle />
+                <LanguageSelector />
                 <Link to="/login">
-                  <Button variant="ghost">Sign in</Button>
+                  <Button variant="ghost">{t('navigation.signIn')}</Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary">Sign up</Button>
+                  <Button variant="primary">{t('navigation.signUp')}</Button>
                 </Link>
               </div>
             )}
@@ -84,6 +89,7 @@ const Navbar: React.FC = () => {
           <div className="flex items-center sm:hidden">
             <Logo className="mr-2" />
             <ThemeToggle />
+            <LanguageSelector />
             <button
               onClick={toggleMenu}
               className="ml-2 inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:text-primary-500 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
@@ -110,21 +116,21 @@ const Navbar: React.FC = () => {
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Dashboard
+                  {t('navigation.dashboard')}
                 </Link>
                 <Link
                   to="/tasks"
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Tasks
+                  {t('navigation.tasks')}
                 </Link>
                 <Link
                   to="/settings"
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Settings
+                  {t('navigation.settings')}
                 </Link>
                 <button
                   onClick={() => {
@@ -133,7 +139,7 @@ const Navbar: React.FC = () => {
                   }}
                   className="w-full text-left block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  Logout
+                  {t('navigation.logout')}
                 </button>
                 <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center">
@@ -154,14 +160,14 @@ const Navbar: React.FC = () => {
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Sign in
+                  {t('navigation.signIn')}
                 </Link>
                 <Link
                   to="/register"
                   className="block px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Sign up
+                  {t('navigation.signUp')}
                 </Link>
               </>
             )}
