@@ -1,0 +1,33 @@
+{
+  "title": "Dashboard",
+  "metrics": {
+    "completionRate": {
+      "title": "Completion Rate",
+      "tasks": "tasks"
+    },
+    "todayTasks": {
+      "title": "Today's Tasks",
+      "remaining": "tasks remaining"
+    },
+    "highPriority": {
+      "title": "High Priority",
+      "attention": "tasks need attention"
+    }
+  },
+  "sections": {
+    "todayTasks": {
+      "title": "Today's Tasks",
+      "empty": "No tasks for today"
+    },
+    "upcomingTasks": {
+      "title": "Upcoming Tasks",
+      "empty": "No upcoming tasks"
+    },
+    "aiInsights": {
+      "title": "AI Insights",
+      "loading": "Generating AI suggestions...",
+      "empty": "No AI suggestions available yet",
+      "addMore": "Add more tasks to get personalized recommendations"
+    }
+  }
+}
