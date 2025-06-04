@@ -1,0 +1,35 @@
+{
+  "title": "Panel",
+  "metrics": {
+    "completionRate": {
+      "title": "Tasa de finalización",
+      "tasks": "tareas"
+    },
+    "todayTasks": {
+      "title": "Tareas de hoy",
+      "remaining": "tareas pendientes"
+    },
+    "highPriority": {
+      "title": "Alta prioridad",
+      "attention": "tareas necesitan atención"
+    }
+  },
+  "sections": {
+    "todayTasks": {
+      "title": "Tareas de hoy",
+      "empty": "No hay tareas para hoy"
+    },
+    "upcomingTasks": {
+      "title": "Próximas tareas",
+      "empty": "No hay próximas tareas"
+    },
+    "aiInsights": {
+      "title": "Sugerencias de IA",
+      "suggestion": "Sugerencia de IA",
+      "applied": "Aplicado",
+      "loading": "Generando sugerencias de IA...",
+      "empty": "No hay sugerencias de IA disponibles",
+      "addMore": "Agrega más tareas para obtener recomendaciones personalizadas"
+    }
+  }
+}

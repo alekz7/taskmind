@@ -1,0 +1,52 @@
+{
+  "title": "Tareas",
+  "subtitle": "Gestiona y organiza todas tus tareas",
+  "newTask": "Crear nueva tarea",
+  "form": {
+    "title": {
+      "label": "Título de la tarea",
+      "placeholder": "Ingresa el título de la tarea"
+    },
+    "description": {
+      "label": "Descripción",
+      "placeholder": "Descripción de la tarea (opcional)"
+    },
+    "dueDate": {
+      "label": "Fecha de vencimiento"
+    },
+    "estimatedTime": {
+      "label": "Tiempo estimado (minutos)",
+      "placeholder": "30"
+    },
+    "priority": {
+      "label": "Prioridad"
+    },
+    "category": {
+      "label": "Categoría",
+      "placeholder": "ej., Trabajo, Personal, Estudio"
+    }
+  },
+  "filters": {
+    "search": {
+      "placeholder": "Buscar tareas..."
+    },
+    "priority": {
+      "title": "Prioridad:",
+      "all": "Todas"
+    }
+  },
+  "columns": {
+    "todo": {
+      "title": "Por hacer",
+      "empty": "No hay tareas pendientes"
+    },
+    "inProgress": {
+      "title": "En progreso",
+      "empty": "No hay tareas en progreso"
+    },
+    "completed": {
+      "title": "Completadas",
+      "empty": "No hay tareas completadas"
+    }
+  }
+}
