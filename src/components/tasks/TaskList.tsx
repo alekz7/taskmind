@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Task } from '../../types';
 import TaskCard from './TaskCard';
 
@@ -20,9 +21,11 @@ const TaskList: React.FC<TaskListProps> = ({
   onDelete,
   onComplete,
 }) => {
+  const { t } = useTranslation(['tasks']);
+
   return (
     <div className="h-full flex flex-col">
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">{title}</h2>
+      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
       
       {tasks.length === 0 ? (
         <motion.div

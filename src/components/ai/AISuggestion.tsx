@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, Check, X, ArrowRight } from 'lucide-react';
 import { AISuggestion as AISuggestionType } from '../../types';
 import Button from '../ui/Button';
@@ -15,6 +16,8 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   onApply,
   onDismiss,
 }) => {
+  const { t } = useTranslation(['dashboard', 'common']);
+
   const typeColors = {
     'task-priority': 'bg-error-50 border-error-200',
     'task-scheduling': 'bg-primary-50 border-primary-200',
@@ -23,7 +26,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   };
 
   const typeIcons = {
-    'task-priority': <Sparkles className="text-error-500\" size={20} />,
+    'task-priority': <Sparkles className="text-error-500" size={20} />,
     'task-scheduling': <Sparkles className="text-primary-500" size={20} />,
     'productivity': <Sparkles className="text-secondary-500" size={20} />,
     'idle-time': <Sparkles className="text-accent-500" size={20} />,
@@ -43,11 +46,11 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
         
         <div className="flex-1">
           <div className="flex justify-between items-start">
-            <h3 className="font-medium text-gray-900">AI Suggestion</h3>
+            <h3 className="font-medium text-gray-900">{t('sections.aiInsights.suggestion')}</h3>
             {suggestion.applied && (
               <span className="text-xs px-2 py-1 rounded-full bg-success-100 text-success-800 flex items-center">
                 <Check size={12} className="mr-1" />
-                Applied
+                {t('sections.aiInsights.applied')}
               </span>
             )}
           </div>
@@ -62,7 +65,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 leftIcon={<X size={14} />}
                 onClick={() => onDismiss(suggestion.id)}
               >
-                Dismiss
+                {t('common:actions.dismiss')}
               </Button>
               
               <Button
@@ -71,7 +74,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
                 leftIcon={<ArrowRight size={14} />}
                 onClick={() => onApply(suggestion.id)}
               >
-                Apply
+                {t('common:actions.apply')}
               </Button>
             </div>
           )}
