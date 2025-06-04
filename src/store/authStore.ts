@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { User, AuthState, LoginCredentials, RegisterCredentials } from '../types';
 import { persist } from 'zustand/middleware';
+import { User, AuthState, LoginCredentials, RegisterCredentials } from '../types';
+import { supabase } from '../lib/supabase';
 
 interface AuthStore extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -9,59 +10,6 @@ interface AuthStore extends AuthState {
   updateUser: (userData: Partial<User>) => void;
   clearError: () => void;
 }
-
-// Mock authentication functions - in a real app, these would call API endpoints
-const mockLogin = async (credentials: LoginCredentials): Promise<User> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // For demo purposes, just check if email contains "test"
-  if (!credentials.email.includes('test')) {
-    throw new Error('Invalid credentials');
-  }
-  
-  return {
-    id: 'user-1',
-    email: credentials.email,
-    name: 'Test User',
-    preferences: {
-      workHours: { start: '09:00', end: '17:00' },
-      workDays: [1, 2, 3, 4, 5], // Monday to Friday
-      focusTime: 45,
-      breakTime: 15,
-      theme: 'system',
-      notifications: true,
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-};
-
-const mockRegister = async (credentials: RegisterCredentials): Promise<User> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // For demo purposes, just validate email format
-  if (!credentials.email.includes('@')) {
-    throw new Error('Invalid email format');
-  }
-  
-  return {
-    id: 'user-1',
-    email: credentials.email,
-    name: credentials.name,
-    preferences: {
-      workHours: { start: '09:00', end: '17:00' },
-      workDays: [1, 2, 3, 4, 5], // Monday to Friday
-      focusTime: 45,
-      breakTime: 15,
-      theme: 'system',
-      notifications: true,
-    },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-};
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -74,8 +22,46 @@ export const useAuthStore = create<AuthStore>()(
       login: async (credentials) => {
         set({ loading: true, error: null });
         try {
-          const user = await mockLogin(credentials);
-          set({ isAuthenticated: true, user, loading: false });
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password,
+          });
+
+          if (authError) throw authError;
+
+          if (!authData.user) throw new Error('No user data returned');
+
+          // Get additional user data from our users table
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+
+          if (userError) throw userError;
+
+          set({ 
+            isAuthenticated: true, 
+            user: {
+              id: authData.user.id,
+              email: authData.user.email!,
+              name: userData.name,
+              preferences: {
+                workHours: {
+                  start: userData.work_hours_start,
+                  end: userData.work_hours_end,
+                },
+                workDays: userData.work_days,
+                focusTime: userData.focus_time,
+                breakTime: userData.break_time,
+                theme: userData.theme,
+                notifications: userData.notifications,
+              },
+              createdAt: userData.created_at,
+              updatedAt: userData.updated_at,
+            },
+            loading: false 
+          });
         } catch (error) {
           set({ 
             loading: false, 
@@ -89,8 +75,47 @@ export const useAuthStore = create<AuthStore>()(
       register: async (credentials) => {
         set({ loading: true, error: null });
         try {
-          const user = await mockRegister(credentials);
-          set({ isAuthenticated: true, user, loading: false });
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: credentials.email,
+            password: credentials.password,
+          });
+
+          if (authError) throw authError;
+
+          if (!authData.user) throw new Error('No user data returned');
+
+          // Create user profile in our users table
+          const { error: userError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: authData.user.id,
+                name: credentials.name,
+                email: credentials.email,
+              }
+            ]);
+
+          if (userError) throw userError;
+
+          set({ 
+            isAuthenticated: true, 
+            user: {
+              id: authData.user.id,
+              email: authData.user.email!,
+              name: credentials.name,
+              preferences: {
+                workHours: { start: '09:00', end: '17:00' },
+                workDays: [1, 2, 3, 4, 5],
+                focusTime: 45,
+                breakTime: 15,
+                theme: 'system',
+                notifications: true,
+              },
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+            loading: false 
+          });
         } catch (error) {
           set({ 
             loading: false, 
@@ -101,11 +126,12 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        await supabase.auth.signOut();
         set({ isAuthenticated: false, user: null });
       },
 
-      updateUser: (userData) => {
+      updateUser: async (userData) => {
         set((state) => ({
           user: state.user ? { ...state.user, ...userData } : null,
         }));
