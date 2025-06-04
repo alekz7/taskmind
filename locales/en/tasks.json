@@ -1,0 +1,52 @@
+{
+  "title": "Tasks",
+  "subtitle": "Manage and organize all your tasks",
+  "newTask": "Create New Task",
+  "form": {
+    "title": {
+      "label": "Task Title",
+      "placeholder": "Enter task title"
+    },
+    "description": {
+      "label": "Description",
+      "placeholder": "Task description (optional)"
+    },
+    "dueDate": {
+      "label": "Due Date"
+    },
+    "estimatedTime": {
+      "label": "Estimated Time (minutes)",
+      "placeholder": "30"
+    },
+    "priority": {
+      "label": "Priority"
+    },
+    "category": {
+      "label": "Category",
+      "placeholder": "e.g., Work, Personal, Study"
+    }
+  },
+  "filters": {
+    "search": {
+      "placeholder": "Search tasks..."
+    },
+    "priority": {
+      "title": "Priority:",
+      "all": "All"
+    }
+  },
+  "columns": {
+    "todo": {
+      "title": "To Do",
+      "empty": "No pending tasks"
+    },
+    "inProgress": {
+      "title": "In Progress",
+      "empty": "No tasks in progress"
+    },
+    "completed": {
+      "title": "Completed",
+      "empty": "No completed tasks"
+    }
+  }
+}
