@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Brain, UserPlus, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { useAuthStore } from '../../store/authStore';
 import Input from '../../components/ui/Input';
@@ -11,6 +12,7 @@ import Card, { CardContent } from '../../components/ui/Card';
 const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register, error, clearError, loading } = useAuthStore();
+  const { t } = useTranslation(['auth', 'common']);
   
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,31 +36,31 @@ const Register: React.FC = () => {
     
     // Validate name
     if (!name.trim()) {
-      setNameError('Name is required');
+      setNameError(t('validation.required', { field: t('register.name') }));
       isValid = false;
     }
     
     // Validate email
     if (!email.trim()) {
-      setEmailError('Email is required');
+      setEmailError(t('validation.required', { field: t('register.email') }));
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      setEmailError('Email is invalid');
+      setEmailError(t('validation.email'));
       isValid = false;
     }
     
     // Validate password
     if (!password.trim()) {
-      setPasswordError('Password is required');
+      setPasswordError(t('validation.required', { field: t('register.password') }));
       isValid = false;
     } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      setPasswordError(t('validation.passwordLength'));
       isValid = false;
     }
     
     // Validate confirm password
     if (password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError(t('validation.passwordMatch'));
       isValid = false;
     }
     
@@ -87,12 +89,12 @@ const Register: React.FC = () => {
           </Link>
         </div>
         <h2 className="mt-3 text-center text-3xl font-bold text-gray-900">
-          Create your account
+          {t('register.title')}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
+          {t('register.subtitle')}{' '}
           <Link to="/login" className="font-medium text-primary-600 hover:text-primary-500">
-            sign in to your existing account
+            {t('login.title')}
           </Link>
         </p>
       </div>
@@ -114,11 +116,11 @@ const Register: React.FC = () => {
               
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <Input
-                  label="Name"
+                  label={t('register.name')}
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
+                  placeholder={t('register.name')}
                   leftIcon={<User size={18} />}
                   error={nameError}
                   fullWidth
@@ -126,33 +128,33 @@ const Register: React.FC = () => {
                 />
                 
                 <Input
-                  label="Email"
+                  label={t('register.email')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder={t('register.email')}
                   leftIcon={<Mail size={18} />}
                   error={emailError}
                   fullWidth
                 />
                 
                 <Input
-                  label="Password"
+                  label={t('register.password')}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
+                  placeholder={t('register.password')}
                   leftIcon={<Lock size={18} />}
                   error={passwordError}
                   fullWidth
                 />
                 
                 <Input
-                  label="Confirm Password"
+                  label={t('register.confirmPassword')}
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your password"
+                  placeholder={t('register.confirmPassword')}
                   leftIcon={<Lock size={18} />}
                   error={confirmPasswordError}
                   fullWidth
@@ -167,20 +169,20 @@ const Register: React.FC = () => {
                     isLoading={loading}
                     fullWidth
                   >
-                    Create Account
+                    {t('register.submit')}
                   </Button>
                 </div>
               </form>
               
               <div className="mt-6">
                 <p className="text-center text-sm text-gray-600">
-                  By signing up, you agree to our{' '}
+                  {t('register.terms')}{' '}
                   <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                    Terms of Service
+                    {t('register.termsLink')}
                   </a>{' '}
-                  and{' '}
+                  {t('register.and')}{' '}
                   <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                    Privacy Policy
+                    {t('register.privacyLink')}
                   </a>
                 </p>
               </div>
