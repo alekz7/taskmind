@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { Plus, Clock, Sparkles, Calendar, Layout, BarChart } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { useTaskStore } from '../store/taskStore';
 import { useAISuggestionStore } from '../store/aiSuggestionStore';
@@ -22,6 +23,7 @@ const Dashboard: React.FC = () => {
     dismissSuggestion,
     isLoading: suggestionsLoading 
   } = useAISuggestionStore();
+  const { t } = useTranslation(['dashboard', 'common']);
   
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -83,7 +85,7 @@ const Dashboard: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
           <p className="text-gray-600 mt-1">
             {format(new Date(), 'EEEE, MMMM d, yyyy')}
           </p>
@@ -98,7 +100,7 @@ const Dashboard: React.FC = () => {
               setEditingTaskId(null);
             }}
           >
-            {showAddTask ? 'Cancel' : 'Add New Task'}
+            {showAddTask ? t('common:actions.cancel') : t('common:actions.create')}
           </Button>
         </div>
       </div>
@@ -137,11 +139,11 @@ const Dashboard: React.FC = () => {
                   <BarChart size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Completion Rate</p>
+                  <p className="text-sm font-medium text-gray-500">{t('metrics.completionRate.title')}</p>
                   <div className="flex items-baseline">
                     <p className="text-2xl font-semibold text-gray-900">{completionRate}%</p>
                     <p className="ml-2 text-sm text-gray-500">
-                      ({completedTasksCount}/{totalTasks} tasks)
+                      ({completedTasksCount}/{totalTasks} {t('metrics.completionRate.tasks')})
                     </p>
                   </div>
                 </div>
@@ -162,11 +164,11 @@ const Dashboard: React.FC = () => {
                   <Clock size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Today's Tasks</p>
+                  <p className="text-sm font-medium text-gray-500">{t('metrics.todayTasks.title')}</p>
                   <div className="flex items-baseline">
                     <p className="text-2xl font-semibold text-gray-900">{todayTasks.length}</p>
                     <p className="ml-2 text-sm text-gray-500">
-                      tasks remaining
+                      {t('metrics.todayTasks.remaining')}
                     </p>
                   </div>
                 </div>
@@ -187,11 +189,11 @@ const Dashboard: React.FC = () => {
                   <Layout size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">High Priority</p>
+                  <p className="text-sm font-medium text-gray-500">{t('metrics.highPriority.title')}</p>
                   <div className="flex items-baseline">
                     <p className="text-2xl font-semibold text-gray-900">{highPriorityCount}</p>
                     <p className="ml-2 text-sm text-gray-500">
-                      tasks need attention
+                      {t('metrics.highPriority.attention')}
                     </p>
                   </div>
                 </div>
@@ -208,14 +210,14 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Calendar className="mr-2 h-5 w-5 text-gray-500" />
-              Today's Tasks
+              {t('sections.todayTasks.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">
             <TaskList
               tasks={todayTasks}
               title=""
-              emptyMessage="No tasks for today"
+              emptyMessage={t('sections.todayTasks.empty')}
               onEdit={handleEditTask}
               onDelete={deleteTask}
               onComplete={completeTask}
@@ -228,14 +230,14 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Clock className="mr-2 h-5 w-5 text-gray-500" />
-              Upcoming Tasks
+              {t('sections.upcomingTasks.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">
             <TaskList
               tasks={upcomingTasks}
               title=""
-              emptyMessage="No upcoming tasks"
+              emptyMessage={t('sections.upcomingTasks.empty')}
               onEdit={handleEditTask}
               onDelete={deleteTask}
               onComplete={completeTask}
@@ -248,7 +250,7 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Sparkles className="mr-2 h-5 w-5 text-primary-500" />
-              AI Insights
+              {t('sections.aiInsights.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">
