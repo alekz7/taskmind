@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarIcon, Clock, Tag, PlusCircle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Task } from '../../types';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
@@ -12,6 +13,7 @@ interface TaskFormProps {
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) => {
+  const { t } = useTranslation(['tasks', 'common']);
   const [title, setTitle] = useState(initialTask?.title || '');
   const [description, setDescription] = useState(initialTask?.description || '');
   const [dueDate, setDueDate] = useState(initialTask?.dueDate || '');
@@ -32,7 +34,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
     
     // Validate title
     if (title.trim() === '') {
-      setTitleError('Title is required');
+      setTitleError(t('validation.required', { field: t('form.title.label') }));
       return;
     }
     
@@ -60,7 +62,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
     >
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900">
-          {initialTask?.id ? 'Edit Task' : 'Create New Task'}
+          {initialTask?.id ? t('form.edit.title') : t('form.create.title')}
         </h2>
         <Button
           variant="ghost"
@@ -68,14 +70,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
           onClick={onCancel}
           leftIcon={<X size={16} />}
         >
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
-          label="Task Title"
-          placeholder="Enter task title"
+          label={t('form.title.label')}
+          placeholder={t('form.title.placeholder')}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           fullWidth
@@ -85,13 +87,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
+            {t('form.description.label')}
           </label>
           <textarea
             id="description"
             rows={3}
             className="w-full rounded-md shadow-sm border-gray-300 focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
-            placeholder="Task description (optional)"
+            placeholder={t('form.description.placeholder')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
@@ -99,7 +101,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Due Date"
+            label={t('form.dueDate.label')}
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
@@ -109,7 +111,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
           
           <div>
             <label htmlFor="estimatedTime" className="block text-sm font-medium text-gray-700 mb-1">
-              Estimated Time (minutes)
+              {t('form.estimatedTime.label')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
@@ -120,7 +122,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
                 type="number"
                 min="0"
                 className="pl-10 w-full rounded-md shadow-sm border-gray-300 focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
-                placeholder="30"
+                placeholder={t('form.estimatedTime.placeholder')}
                 value={estimatedTime || ''}
                 onChange={(e) => setEstimatedTime(e.target.value ? parseInt(e.target.value) : undefined)}
               />
@@ -131,7 +133,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
-              Priority
+              {t('form.priority.label')}
             </label>
             <select
               id="priority"
@@ -139,15 +141,15 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
               value={priority}
               onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
             >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
+              <option value="low">{t('common:priority.low')}</option>
+              <option value="medium">{t('common:priority.medium')}</option>
+              <option value="high">{t('common:priority.high')}</option>
             </select>
           </div>
           
           <Input
-            label="Category"
-            placeholder="e.g., Work, Personal, Study"
+            label={t('form.category.label')}
+            placeholder={t('form.category.placeholder')}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             leftIcon={<Tag size={16} />}
@@ -160,14 +162,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
             variant="ghost"
             onClick={onCancel}
           >
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button
             type="submit"
             variant="primary"
             leftIcon={<PlusCircle size={16} />}
           >
-            {initialTask?.id ? 'Update Task' : 'Create Task'}
+            {initialTask?.id ? t('common:actions.save') : t('common:actions.create')}
           </Button>
         </div>
       </form>
