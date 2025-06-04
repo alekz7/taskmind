@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "TaskMind",
+    "tagline": "Planificación de Tareas con IA"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "tasks": "Tareas",
+    "settings": "Ajustes",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "logout": "Cerrar sesión"
+  },
+  "actions": {
+    "create": "Crear",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "apply": "Aplicar",
+    "dismiss": "Descartar",
+    "complete": "Completar"
+  },
+  "status": {
+    "loading": "Cargando...",
+    "error": "Ha ocurrido un error",
+    "success": "Éxito",
+    "pending": "Pendiente",
+    "inProgress": "En progreso",
+    "completed": "Completado"
+  },
+  "priority": {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta"
+  }
+}

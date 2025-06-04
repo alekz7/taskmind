@@ -1,0 +1,96 @@
+{
+  "hero": {
+    "title": {
+      "line1": "Transforma tu productividad con",
+      "line2": "Planificación de tareas impulsada por IA"
+    },
+    "description": "TaskMind utiliza IA avanzada para organizar tus tareas, identificar prioridades y optimizar tu flujo de trabajo según tus hábitos y preferencias personales."
+  },
+  "features": {
+    "title": "Características inteligentes",
+    "subtitle": "TaskMind se adapta a tu estilo de trabajo y se vuelve más inteligente cuanto más lo usas.",
+    "aiPrioritization": {
+      "title": "Priorización de tareas con IA",
+      "description": "Nuestro algoritmo inteligente analiza tus tareas y las prioriza automáticamente según plazos, importancia y patrones de trabajo."
+    },
+    "productivityInsights": {
+      "title": "Insights de productividad",
+      "description": "Obtén información personalizada sobre tus patrones de productividad, con sugerencias para optimizar tu flujo de trabajo y aumentar la eficiencia."
+    },
+    "adaptiveLearning": {
+      "title": "Aprendizaje adaptativo",
+      "description": "TaskMind aprende de tu comportamiento y preferencias con el tiempo, haciendo sugerencias cada vez más precisas que se alinean con tu estilo de trabajo."
+    }
+  },
+  "testimonials": {
+    "title": "Lo que dicen nuestros usuarios",
+    "users": {
+      "john": {
+        "name": "Juan Pérez",
+        "role": "Gerente de producto",
+        "quote": "TaskMind ha transformado completamente cómo gestiono los proyectos de mi equipo. Las sugerencias de IA son sorprendentemente precisas y nos han ayudado a optimizar nuestro flujo de trabajo."
+      },
+      "alice": {
+        "name": "Ana García",
+        "role": "Diseñadora freelance",
+        "quote": "Como freelancer que maneja múltiples clientes, TaskMind me ayuda a priorizar efectivamente. Me encanta cómo se adapta a mi estilo de trabajo y sugiere horarios óptimos."
+      },
+      "michael": {
+        "name": "Miguel Rodríguez",
+        "role": "Ingeniero de software",
+        "quote": "Los insights de productividad son revolucionarios. TaskMind identificó que soy más productivo por la mañana, así que ahora programo mis tareas más exigentes antes del mediodía."
+      }
+    }
+  },
+  "cta": {
+    "title": "¿Listo para transformar tu productividad?",
+    "subtitle": "Únete a miles de profesionales que usan TaskMind para trabajar de manera más inteligente.",
+    "button": "Comienza gratis",
+    "features": {
+      "trial": "Prueba gratuita de 14 días",
+      "noCard": "No se requiere tarjeta de crédito",
+      "cancel": "Cancela cuando quieras"
+    }
+  },
+  "footer": {
+    "sections": {
+      "company": {
+        "title": "TaskMind",
+        "links": {
+          "about": "Acerca de",
+          "features": "Características",
+          "pricing": "Precios",
+          "careers": "Carreras"
+        }
+      },
+      "resources": {
+        "title": "Recursos",
+        "links": {
+          "blog": "Blog",
+          "help": "Centro de ayuda",
+          "guides": "Guías",
+          "api": "Documentación API"
+        }
+      },
+      "legal": {
+        "title": "Legal",
+        "links": {
+          "privacy": "Política de privacidad",
+          "terms": "Términos de servicio",
+          "cookie": "Política de cookies",
+          "gdpr": "RGPD"
+        }
+      },
+      "connect": {
+        "title": "Conecta",
+        "links": {
+          "twitter": "Twitter",
+          "linkedin": "LinkedIn",
+          "facebook": "Facebook",
+          "github": "GitHub"
+        }
+      }
+    },
+    "copyright": "© {{year}} TaskMind. Todos los derechos reservados."
+  }
+}
