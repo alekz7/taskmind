@@ -26,7 +26,7 @@ const AISuggestion: React.FC<AISuggestionProps> = ({
   };
 
   const typeIcons = {
-    'task-priority': <Sparkles className="text-error-500" size={20} />,
+    'task-priority': <Sparkles className="text-error-500\" size={20} />,
     'task-scheduling': <Sparkles className="text-primary-500" size={20} />,
     'productivity': <Sparkles className="text-secondary-500" size={20} />,
     'idle-time': <Sparkles className="text-accent-500" size={20} />,
