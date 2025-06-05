@@ -62,13 +62,16 @@ const TasksPage: React.FC = () => {
   const handleDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
     
+    // Drop outside valid drop zone
     if (!destination) return;
     
+    // Drop in same position
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
     ) return;
     
+    // Map droppableId to task status
     const statusMap: Record<string, Task['status']> = {
       'pending': 'pending',
       'in-progress': 'in-progress',
@@ -85,8 +88,8 @@ const TasksPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="text-gray-600 mt-1">{t('subtitle')}</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-1">{t('subtitle')}</p>
         </div>
         
         <div className="mt-4 md:mt-0">
@@ -118,7 +121,7 @@ const TasksPage: React.FC = () => {
         <div className="md:col-span-2">
           <div className="flex items-center space-x-2">
             <Filter size={18} className="text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">{t('filters.priority.title')}</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('filters.priority.title')}</span>
             
             <div className="flex space-x-2">
               <Button
@@ -183,7 +186,7 @@ const TasksPage: React.FC = () => {
           {/* Pending Tasks */}
           <div>
             <Card>
-              <CardHeader className="bg-gray-50">
+              <CardHeader className="bg-gray-50 dark:bg-gray-800">
                 <CardTitle className="flex items-center">
                   <CircleDot className="mr-2 h-5 w-5 text-gray-500" />
                   {t('columns.todo.title')} <span className="ml-2 text-sm text-gray-500">({pendingTasks.length})</span>
@@ -191,24 +194,33 @@ const TasksPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3">
                 <Droppable droppableId="pending">
-                  {(provided) => (
+                  {(provided, snapshot) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="min-h-[200px]"
+                      className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
+                        snapshot.isDraggingOver ? 'bg-gray-50 dark:bg-gray-800' : ''
+                      }`}
                     >
                       {pendingTasks.length === 0 ? (
-                        <div className="text-center p-4 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                           {t('columns.todo.empty')}
                         </div>
                       ) : (
                         pendingTasks.map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index}>
-                            {(provided) => (
+                            {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  opacity: snapshot.isDragging ? 0.8 : 1,
+                                  transform: snapshot.isDragging
+                                    ? `${provided.draggableProps.style?.transform} scale(1.02)`
+                                    : provided.draggableProps.style?.transform,
+                                }}
                               >
                                 <TaskCard
                                   task={task}
@@ -233,7 +245,7 @@ const TasksPage: React.FC = () => {
           {/* In Progress Tasks */}
           <div>
             <Card>
-              <CardHeader className="bg-primary-50">
+              <CardHeader className="bg-primary-50 dark:bg-primary-900">
                 <CardTitle className="flex items-center">
                   <Clock className="mr-2 h-5 w-5 text-primary-500" />
                   {t('columns.inProgress.title')} <span className="ml-2 text-sm text-gray-500">({inProgressTasks.length})</span>
@@ -241,24 +253,33 @@ const TasksPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3">
                 <Droppable droppableId="in-progress">
-                  {(provided) => (
+                  {(provided, snapshot) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="min-h-[200px]"
+                      className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
+                        snapshot.isDraggingOver ? 'bg-primary-50 dark:bg-primary-900/50' : ''
+                      }`}
                     >
                       {inProgressTasks.length === 0 ? (
-                        <div className="text-center p-4 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                           {t('columns.inProgress.empty')}
                         </div>
                       ) : (
                         inProgressTasks.map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index}>
-                            {(provided) => (
+                            {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  opacity: snapshot.isDragging ? 0.8 : 1,
+                                  transform: snapshot.isDragging
+                                    ? `${provided.draggableProps.style?.transform} scale(1.02)`
+                                    : provided.draggableProps.style?.transform,
+                                }}
                               >
                                 <TaskCard
                                   task={task}
@@ -283,7 +304,7 @@ const TasksPage: React.FC = () => {
           {/* Completed Tasks */}
           <div>
             <Card>
-              <CardHeader className="bg-success-50">
+              <CardHeader className="bg-success-50 dark:bg-success-900">
                 <CardTitle className="flex items-center">
                   <CheckCircle className="mr-2 h-5 w-5 text-success-500" />
                   {t('columns.completed.title')} <span className="ml-2 text-sm text-gray-500">({completedTasks.length})</span>
@@ -291,24 +312,33 @@ const TasksPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3">
                 <Droppable droppableId="completed">
-                  {(provided) => (
+                  {(provided, snapshot) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="min-h-[200px]"
+                      className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
+                        snapshot.isDraggingOver ? 'bg-success-50 dark:bg-success-900/50' : ''
+                      }`}
                     >
                       {completedTasks.length === 0 ? (
-                        <div className="text-center p-4 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                           {t('columns.completed.empty')}
                         </div>
                       ) : (
                         completedTasks.map((task, index) => (
                           <Draggable key={task.id} draggableId={task.id} index={index}>
-                            {(provided) => (
+                            {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  opacity: snapshot.isDragging ? 0.8 : 1,
+                                  transform: snapshot.isDragging
+                                    ? `${provided.draggableProps.style?.transform} scale(1.02)`
+                                    : provided.draggableProps.style?.transform,
+                                }}
                               >
                                 <TaskCard
                                   task={task}
