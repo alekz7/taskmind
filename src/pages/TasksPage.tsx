@@ -199,6 +199,8 @@ const TasksPage: React.FC = () => {
                   {(provided, snapshot) =>
                   
                   (                      
+                    const isBroken = !pendingTasks || !Array.isArray(pendingTasks);
+
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
