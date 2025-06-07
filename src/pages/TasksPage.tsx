@@ -196,7 +196,7 @@ const TasksPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3">
                 <Droppable droppableId="pending">
-                  {(provided, snapshot) => 
+                  {(provided, snapshot) => {
                   console.log("✅ Rendering Droppable: pending");
                   return (                      
                     <div
