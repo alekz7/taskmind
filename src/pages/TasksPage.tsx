@@ -38,6 +38,15 @@ const TasksPage: React.FC = () => {
   const inProgressTasks = filteredTasks.filter(task => task.status === 'in-progress');
   const completedTasks = filteredTasks.filter(task => task.status === 'completed');
   
+  // Debug logging for task distribution
+  console.log('🔍 TASK DISTRIBUTION DEBUG:');
+  console.log('📋 All tasks from store:', tasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+  console.log('🔎 Filtered tasks:', filteredTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+  console.log('⏳ Pending tasks:', pendingTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+  console.log('🔄 In Progress tasks:', inProgressTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+  console.log('✅ Completed tasks:', completedTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+  console.log('📊 Task counts - Pending:', pendingTasks.length, 'In Progress:', inProgressTasks.length, 'Completed:', completedTasks.length);
+  
   const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     addTask(taskData);
     setShowAddTask(false);
@@ -60,18 +69,25 @@ const TasksPage: React.FC = () => {
   };
   
   const handleDragEnd = (result: DropResult) => {
-    console.log("Drag result", result);
-    console.log("All task", tasks)
+    console.log("🎯 Drag result:", result);
+    console.log("📋 All tasks at drag end:", tasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
+    
     const { source, destination, draggableId } = result;
     
     // Drop outside valid drop zone
-    if (!destination) return;
+    if (!destination) {
+      console.log("❌ No destination - drag cancelled");
+      return;
+    }
     
     // Drop in same position
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
-    ) return;
+    ) {
+      console.log("❌ Same position - no change needed");
+      return;
+    }
     
     // Map droppableId to task status
     const statusMap: Record<string, Task['status']> = {
@@ -81,8 +97,14 @@ const TasksPage: React.FC = () => {
     };
     
     const newStatus = statusMap[destination.droppableId];
+    const oldStatus = statusMap[source.droppableId];
+    
+    console.log(`🔄 Moving task ${draggableId} from ${oldStatus} to ${newStatus}`);
+    
     if (newStatus) {
       moveTask(draggableId, newStatus);
+    } else {
+      console.error("❌ Invalid destination status:", destination.droppableId);
     }
   };
   
@@ -197,60 +219,49 @@ const TasksPage: React.FC = () => {
               </CardHeader>
               <CardContent className="p-3">
                 <Droppable droppableId="pending">
-                  {(provided, snapshot) => {
-                    const isBroken = !pendingTasks || !Array.isArray(pendingTasks);
-                    if (isBroken) {
-                      console.warn("⚠️ Droppable 'pending' has invalid or missing tasks data");
-                    }
-                    
-                    return (
-                      <div
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                        className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
-                          snapshot.isDraggingOver ? 'bg-gray-50 dark:bg-gray-800' : ''
-                        }`}
-                      >
-                        {isBroken ? (
-                          <div className="text-red-600 p-4 border border-red-400 bg-red-100 rounded">
-                            ⚠️ Error loading tasks for this column.
-                          </div>
-                        ) : pendingTasks.length === 0 ? (
-                          <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-                            {t('columns.todo.empty')}
-                          </div>
-                        ) : (
-                          pendingTasks.map((task, index) => (
-                            <Draggable key={task.id} draggableId={task.id} index={index}>
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  style={{
-                                    ...provided.draggableProps.style,
-                                    opacity: snapshot.isDragging ? 0.8 : 1,
-                                    transform: snapshot.isDragging
-                                      ? `${provided.draggableProps.style?.transform} scale(1.02)`
-                                      : provided.draggableProps.style?.transform,
-                                  }}
-                                >
-                                  <TaskCard
-                                    task={task}
-                                    onEdit={handleEditTask}
-                                    onDelete={deleteTask}
-                                    onComplete={completeTask}
-                                    isDraggable
-                                  />
-                                </div>
-                              )}
-                            </Draggable>
-                          ))
-                        )}
-                        {provided.placeholder}
-                      </div>
-                    );
-                  }}
+                  {(provided, snapshot) => (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
+                        snapshot.isDraggingOver ? 'bg-gray-50 dark:bg-gray-800' : ''
+                      }`}
+                    >
+                      {pendingTasks.length === 0 ? (
+                        <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+                          {t('columns.todo.empty')}
+                        </div>
+                      ) : (
+                        pendingTasks.map((task, index) => (
+                          <Draggable key={task.id} draggableId={task.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                style={{
+                                  ...provided.draggableProps.style,
+                                  opacity: snapshot.isDragging ? 0.8 : 1,
+                                  transform: snapshot.isDragging
+                                    ? `${provided.draggableProps.style?.transform} scale(1.02)`
+                                    : provided.draggableProps.style?.transform,
+                                }}
+                              >
+                                <TaskCard
+                                  task={task}
+                                  onEdit={handleEditTask}
+                                  onDelete={deleteTask}
+                                  onComplete={completeTask}
+                                  isDraggable
+                                />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))
+                      )}
+                      {provided.placeholder}
+                    </div>
+                  )}
                 </Droppable>
               </CardContent>
             </Card>

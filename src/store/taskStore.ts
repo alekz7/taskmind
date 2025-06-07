@@ -195,7 +195,21 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
   
   moveTask: async (taskId, newStatus) => {
-    set({ isLoading: true });
+    const currentTasks = get().tasks;
+    const taskToMove = currentTasks.find(task => task.id === taskId);
+    
+    if (!taskToMove) {
+      console.error('Task not found for move operation:', taskId);
+      return;
+    }
+
+    // Optimistic update - update local state immediately
+    const updatedTasks = currentTasks.map(task =>
+      task.id === taskId ? { ...task, status: newStatus } : task
+    );
+    
+    set({ tasks: updatedTasks });
+    
     try {
       const { error } = await supabase
         .from('tasks')
@@ -203,11 +217,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         .eq('id', taskId);
 
       if (error) throw error;
-
-      await get().fetchTasks(); // Refresh tasks
-      set({ isLoading: false });
+      
+      console.log(`✅ Task ${taskId} successfully moved to ${newStatus}`);
     } catch (error) {
-      set({ error: error instanceof Error ? error.message : 'Failed to move task', isLoading: false });
+      // Revert optimistic update on error
+      set({ tasks: currentTasks });
+      set({ error: error instanceof Error ? error.message : 'Failed to move task' });
+      console.error('❌ Failed to move task, reverted local state:', error);
     }
   },
   
