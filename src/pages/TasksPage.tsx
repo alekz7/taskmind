@@ -198,9 +198,12 @@ const TasksPage: React.FC = () => {
                 <Droppable droppableId="pending">
                   {(provided, snapshot) =>
                   
-                  (                      
+                  {                      
                     const isBroken = !pendingTasks || !Array.isArray(pendingTasks);
-
+                    if (isBroken) {
+                      console.warn("⚠️ Droppable 'pending' has invalid or missing tasks data");
+                    }
+                  return (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
@@ -246,7 +249,8 @@ const TasksPage: React.FC = () => {
                       ) }
                       {provided.placeholder}
                     </div>
-                  )}
+                  );
+                  }}
                 </Droppable>
               </CardContent>
             </Card>
