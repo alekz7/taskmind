@@ -206,7 +206,11 @@ const TasksPage: React.FC = () => {
                         snapshot.isDraggingOver ? 'bg-gray-50 dark:bg-gray-800' : ''
                       }`}
                     >
-                      {pendingTasks.length === 0 ? (
+                      {isBroken ? (
+          <div className="text-red-600 p-4 border border-red-400 bg-red-100 rounded">
+            ⚠️ Error loading tasks for this column.
+          </div>
+        ) : pendingTasks.length === 0 ? (
                         <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
                           {t('columns.todo.empty')}
                         </div>
