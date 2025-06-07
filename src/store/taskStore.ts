@@ -33,7 +33,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     
     try {
       // Check if user is authenticated
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('❌ fetchTasks: Auth error:', authError);
+        throw authError;
+      }
       
       if (!user) {
         console.log('❌ fetchTasks: No authenticated user found');
@@ -124,12 +129,23 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   
   addTask: async (taskData) => {
     console.log('➕ addTask: Starting to add task:', taskData);
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No authenticated user');
+      // Get current user with better error handling
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('❌ addTask: Auth error:', authError);
+        throw new Error(`Authentication failed: ${authError.message}`);
+      }
+      
+      if (!user) {
+        console.error('❌ addTask: No authenticated user');
+        throw new Error('No authenticated user found. Please log in again.');
+      }
+
+      console.log('👤 addTask: Authenticated user:', user.id);
 
       let categoryId = null;
       if (taskData.category) {
@@ -153,7 +169,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             .select('id')
             .single();
 
-          if (categoryError) throw categoryError;
+          if (categoryError) {
+            console.error('❌ addTask: Category creation error:', categoryError);
+            throw categoryError;
+          }
           categoryId = newCategory.id;
         } else {
           categoryId = existingCategory.id;
@@ -165,7 +184,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         .from('tasks')
         .insert([{
           title: taskData.title,
-          description: taskData.description,
+          description: taskData.description || '',
           due_date: taskData.dueDate,
           priority: taskData.priority,
           status: taskData.status,
@@ -177,26 +196,40 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ addTask: Database insert error:', error);
+        throw error;
+      }
 
-      console.log('✅ addTask: Task inserted successfully');
-      await get().fetchTasks(); // Refresh tasks
+      console.log('✅ addTask: Task inserted successfully:', data);
+      
+      // Refresh tasks to get the latest data
+      await get().fetchTasks();
       set({ isLoading: false });
       
     } catch (error) {
       console.error('❌ addTask: Error occurred:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to add task';
       set({ error: errorMessage, isLoading: false });
+      throw error; // Re-throw so the UI can handle it
     }
   },
   
   updateTask: async (id, updates) => {
     console.log(`📝 updateTask: Starting to update task ${id}:`, updates);
-    set({ isLoading: true });
+    set({ isLoading: true, error: null });
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No authenticated user');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('❌ updateTask: Auth error:', authError);
+        throw authError;
+      }
+      
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
 
       let categoryId = null;
       if (updates.category) {
@@ -250,6 +283,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       console.error('❌ updateTask: Error occurred:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to update task';
       set({ error: errorMessage, isLoading: false });
+      throw error;
     }
   },
   
@@ -257,7 +291,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     console.log(`🗑️ deleteTask: Starting to delete task ${id}`);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) throw authError;
       if (!user) throw new Error('No authenticated user');
 
       const { error } = await supabase
@@ -277,6 +313,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       console.error('❌ deleteTask: Error occurred:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete task';
       set({ error: errorMessage });
+      throw error;
     }
   },
   
@@ -284,7 +321,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     console.log(`✅ completeTask: Starting to complete task ${id}`);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) throw authError;
       if (!user) throw new Error('No authenticated user');
 
       const { error } = await supabase
@@ -308,6 +347,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       console.error('❌ completeTask: Error occurred:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to complete task';
       set({ error: errorMessage });
+      throw error;
     }
   },
   
@@ -364,7 +404,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       console.log(`🚀 moveTask: Updating database for task ${taskId}...`);
       
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) throw authError;
       if (!user) throw new Error('No authenticated user');
 
       const { error } = await supabase

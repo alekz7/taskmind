@@ -58,10 +58,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-white rounded-lg shadow-md p-5 border border-gray-200"
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 border border-gray-200 dark:border-gray-700"
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           {initialTask?.id ? t('form.edit.title') : t('form.create.title')}
         </h2>
         <Button
@@ -86,13 +86,13 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         />
         
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {t('form.description.label')}
           </label>
           <textarea
             id="description"
             rows={3}
-            className="w-full rounded-md shadow-sm border-gray-300 focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
+            className="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
             placeholder={t('form.description.placeholder')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -110,7 +110,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
           />
           
           <div>
-            <label htmlFor="estimatedTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="estimatedTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('form.estimatedTime.label')}
             </label>
             <div className="relative">
@@ -121,7 +121,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
                 id="estimatedTime"
                 type="number"
                 min="0"
-                className="pl-10 w-full rounded-md shadow-sm border-gray-300 focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
+                className="pl-10 w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
                 placeholder={t('form.estimatedTime.placeholder')}
                 value={estimatedTime || ''}
                 onChange={(e) => setEstimatedTime(e.target.value ? parseInt(e.target.value) : undefined)}
@@ -132,12 +132,12 @@ const TaskForm: React.FC<TaskFormProps> = ({ initialTask, onSubmit, onCancel }) 
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t('form.priority.label')}
             </label>
             <select
               id="priority"
-              className="w-full rounded-md shadow-sm border-gray-300 focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
+              className="w-full rounded-md shadow-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring focus:ring-primary-500 focus:ring-opacity-50"
               value={priority}
               onChange={(e) => setPriority(e.target.value as 'low' | 'medium' | 'high')}
             >
