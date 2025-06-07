@@ -20,12 +20,24 @@ const TasksPage: React.FC = () => {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+  const [isDragDisabled, setIsDragDisabled] = useState(true);
   
   // Fetch tasks on component mount
   useEffect(() => {
     console.log('🚀 TasksPage: Component mounted, fetching tasks...');
     fetchTasks();
   }, [fetchTasks]);
+  
+  // Enable drag only after tasks are loaded
+  useEffect(() => {
+    if (tasks.length > 0 && !isLoading) {
+      console.log('✅ Tasks loaded, enabling drag and drop');
+      setIsDragDisabled(false);
+    } else {
+      console.log('⏳ Tasks not ready, disabling drag and drop');
+      setIsDragDisabled(true);
+    }
+  }, [tasks.length, isLoading]);
   
   // Get task being edited
   const editingTask = editingTaskId ? tasks.find(task => task.id === editingTaskId) : undefined;
@@ -54,23 +66,25 @@ const TasksPage: React.FC = () => {
       inProgress: inProgressTasks.length,
       completed: completedTasks.length
     });
-    console.log('📝 Task details by status:');
-    console.log('  ⏳ Pending:', pendingTasks.map(t => ({ id: t.id, title: t.title })));
-    console.log('  🔄 In Progress:', inProgressTasks.map(t => ({ id: t.id, title: t.title })));
-    console.log('  ✅ Completed:', completedTasks.map(t => ({ id: t.id, title: t.title })));
-  }, [tasks, filteredTasks, pendingTasks, inProgressTasks, completedTasks]);
+    console.log('📝 All task IDs in store:', tasks.map(t => t.id));
+    console.log('🎯 Drag disabled:', isDragDisabled);
+  }, [tasks, filteredTasks, pendingTasks, inProgressTasks, completedTasks, isDragDisabled]);
   
-  const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     console.log('➕ TasksPage: Adding new task:', taskData);
-    addTask(taskData);
+    setIsDragDisabled(true); // Disable drag during task operations
+    await addTask(taskData);
     setShowAddTask(false);
+    setIsDragDisabled(false);
   };
   
-  const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (editingTaskId) {
       console.log('📝 TasksPage: Updating task:', editingTaskId, taskData);
-      updateTask(editingTaskId, taskData);
+      setIsDragDisabled(true);
+      await updateTask(editingTaskId, taskData);
       setEditingTaskId(null);
+      setIsDragDisabled(false);
     }
   };
   
@@ -85,19 +99,44 @@ const TasksPage: React.FC = () => {
     setEditingTaskId(null);
   };
   
+  const handleDragStart = (start: any) => {
+    console.log('🎯 ========== DRAG START ==========');
+    console.log('🎯 Drag started for task:', start.draggableId);
+    
+    // Verify the task exists
+    const task = tasks.find(t => t.id === start.draggableId);
+    if (!task) {
+      console.error('❌ CRITICAL: Task not found at drag start!', {
+        draggableId: start.draggableId,
+        availableIds: tasks.map(t => t.id)
+      });
+    } else {
+      console.log('✅ Task found:', { id: task.id, title: task.title, status: task.status });
+    }
+  };
+  
   const handleDragEnd = async (result: DropResult) => {
     console.log('🎯 ========== DRAG END TRIGGERED ==========');
     console.log('🎯 Full drag result:', JSON.stringify(result, null, 2));
     
     const { source, destination, draggableId } = result;
     
-    // Find the task being dragged
+    // Verify task still exists
     const draggedTask = tasks.find(task => task.id === draggableId);
-    console.log('🎯 Dragged task details:', draggedTask ? {
+    console.log('🎯 Dragged task verification:', draggedTask ? {
       id: draggedTask.id,
       title: draggedTask.title,
       currentStatus: draggedTask.status
     } : 'TASK NOT FOUND!');
+    
+    if (!draggedTask) {
+      console.error('❌ CRITICAL: Task disappeared during drag!', {
+        draggableId,
+        availableIds: tasks.map(t => t.id),
+        totalTasks: tasks.length
+      });
+      return;
+    }
     
     // Drop outside valid drop zone
     if (!destination) {
@@ -126,6 +165,7 @@ const TasksPage: React.FC = () => {
     
     console.log('🔄 Status change details:', {
       taskId: draggableId,
+      taskTitle: draggedTask.title,
       from: {
         droppableId: source.droppableId,
         status: oldStatus,
@@ -143,17 +183,15 @@ const TasksPage: React.FC = () => {
       return;
     }
     
-    if (!draggedTask) {
-      console.error('❌ Task not found in store:', draggableId);
-      return;
-    }
-    
     if (draggedTask.status === newStatus) {
       console.log('⚠️ Task already in target status, no change needed');
       return;
     }
     
     console.log(`🚀 EXECUTING MOVE: Task "${draggedTask.title}" from ${draggedTask.status} to ${newStatus}`);
+    
+    // Disable drag during the operation
+    setIsDragDisabled(true);
     
     try {
       // Call moveTask and wait for completion
@@ -162,24 +200,19 @@ const TasksPage: React.FC = () => {
       console.log('✅ ========== DRAG OPERATION COMPLETED SUCCESSFULLY ==========');
       console.log(`✅ Task "${draggedTask.title}" successfully moved to ${newStatus}`);
       
-      // Log the new state after move
-      setTimeout(() => {
-        const updatedTasks = useTaskStore.getState().tasks;
-        const updatedTask = updatedTasks.find(t => t.id === draggableId);
-        console.log('🔍 Post-move verification:', {
-          taskId: draggableId,
-          newStatus: updatedTask?.status,
-          expectedStatus: newStatus,
-          success: updatedTask?.status === newStatus
-        });
-      }, 100);
-      
     } catch (error) {
       console.error('❌ ========== DRAG OPERATION FAILED ==========');
       console.error(`❌ Failed to move task "${draggedTask.title}":`, error);
+    } finally {
+      // Re-enable drag after operation
+      setTimeout(() => {
+        setIsDragDisabled(false);
+        console.log('🔄 Drag re-enabled after operation');
+      }, 500);
     }
   };
   
+  // Show loading state while tasks are being fetched
   if (isLoading && tasks.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -188,6 +221,47 @@ const TasksPage: React.FC = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-300">Loading tasks...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Don't render drag context until tasks are loaded
+  if (tasks.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">{t('subtitle')}</p>
+          </div>
+          
+          <div className="mt-4 md:mt-0">
+            <Button
+              variant="primary"
+              leftIcon={<PlusCircle size={18} />}
+              onClick={() => {
+                setShowAddTask(true);
+                setEditingTaskId(null);
+              }}
+            >
+              {t('newTask')}
+            </Button>
+          </div>
+        </div>
+        
+        {/* Task Form */}
+        {showAddTask && (
+          <div className="mb-8">
+            <TaskForm
+              onSubmit={handleAddTask}
+              onCancel={() => setShowAddTask(false)}
+            />
+          </div>
+        )}
+        
+        <div className="text-center py-12">
+          <p className="text-gray-500 dark:text-gray-400">No tasks found. Create your first task to get started!</p>
         </div>
       </div>
     );
@@ -289,8 +363,18 @@ const TasksPage: React.FC = () => {
         </div>
       )}
       
+      {/* Drag disabled indicator */}
+      {isDragDisabled && (
+        <div className="mb-4 p-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-md text-sm text-center">
+          ⏳ Drag and drop temporarily disabled during operations...
+        </div>
+      )}
+      
       {/* Task Columns */}
-      <DragDropContext onDragEnd={handleDragEnd}>
+      <DragDropContext 
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
           {/* Pending Tasks */}
@@ -303,16 +387,16 @@ const TasksPage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3">
-                <Droppable droppableId="pending">
+                <Droppable droppableId="pending" isDropDisabled={isDragDisabled}>
                   {(provided, snapshot) => {
-                    console.log('🔄 Rendering Droppable: pending, isDraggingOver:', snapshot.isDraggingOver);
+                    console.log('🔄 Rendering Droppable: pending, isDraggingOver:', snapshot.isDraggingOver, 'disabled:', isDragDisabled);
                     return (
                       <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                         className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
                           snapshot.isDraggingOver ? 'bg-gray-50 dark:bg-gray-800' : ''
-                        }`}
+                        } ${isDragDisabled ? 'opacity-50' : ''}`}
                       >
                         {pendingTasks.length === 0 ? (
                           <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
@@ -322,7 +406,12 @@ const TasksPage: React.FC = () => {
                           pendingTasks.map((task, index) => {
                             console.log(`🎯 Rendering pending task ${index}:`, { id: task.id, title: task.title });
                             return (
-                              <Draggable key={task.id} draggableId={task.id} index={index}>
+                              <Draggable 
+                                key={task.id} 
+                                draggableId={task.id} 
+                                index={index}
+                                isDragDisabled={isDragDisabled}
+                              >
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
@@ -341,7 +430,7 @@ const TasksPage: React.FC = () => {
                                       onEdit={handleEditTask}
                                       onDelete={deleteTask}
                                       onComplete={completeTask}
-                                      isDraggable
+                                      isDraggable={!isDragDisabled}
                                     />
                                   </div>
                                 )}
@@ -368,16 +457,16 @@ const TasksPage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3">
-                <Droppable droppableId="in-progress">
+                <Droppable droppableId="in-progress" isDropDisabled={isDragDisabled}>
                   {(provided, snapshot) => {
-                    console.log('🔄 Rendering Droppable: in-progress, isDraggingOver:', snapshot.isDraggingOver);
+                    console.log('🔄 Rendering Droppable: in-progress, isDraggingOver:', snapshot.isDraggingOver, 'disabled:', isDragDisabled);
                     return (
                       <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                         className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
                           snapshot.isDraggingOver ? 'bg-primary-50 dark:bg-primary-900/50' : ''
-                        }`}
+                        } ${isDragDisabled ? 'opacity-50' : ''}`}
                       >
                         {inProgressTasks.length === 0 ? (
                           <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
@@ -387,7 +476,12 @@ const TasksPage: React.FC = () => {
                           inProgressTasks.map((task, index) => {
                             console.log(`🎯 Rendering in-progress task ${index}:`, { id: task.id, title: task.title });
                             return (
-                              <Draggable key={task.id} draggableId={task.id} index={index}>
+                              <Draggable 
+                                key={task.id} 
+                                draggableId={task.id} 
+                                index={index}
+                                isDragDisabled={isDragDisabled}
+                              >
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
@@ -406,7 +500,7 @@ const TasksPage: React.FC = () => {
                                       onEdit={handleEditTask}
                                       onDelete={deleteTask}
                                       onComplete={completeTask}
-                                      isDraggable
+                                      isDraggable={!isDragDisabled}
                                     />
                                   </div>
                                 )}
@@ -433,16 +527,16 @@ const TasksPage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3">
-                <Droppable droppableId="completed">
+                <Droppable droppableId="completed" isDropDisabled={isDragDisabled}>
                   {(provided, snapshot) => {
-                    console.log('🔄 Rendering Droppable: completed, isDraggingOver:', snapshot.isDraggingOver);
+                    console.log('🔄 Rendering Droppable: completed, isDraggingOver:', snapshot.isDraggingOver, 'disabled:', isDragDisabled);
                     return (
                       <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                         className={`min-h-[200px] transition-colors duration-300 rounded-lg ${
                           snapshot.isDraggingOver ? 'bg-success-50 dark:bg-success-900/50' : ''
-                        }`}
+                        } ${isDragDisabled ? 'opacity-50' : ''}`}
                       >
                         {completedTasks.length === 0 ? (
                           <div className="text-center p-4 text-gray-500 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
@@ -452,7 +546,12 @@ const TasksPage: React.FC = () => {
                           completedTasks.map((task, index) => {
                             console.log(`🎯 Rendering completed task ${index}:`, { id: task.id, title: task.title });
                             return (
-                              <Draggable key={task.id} draggableId={task.id} index={index}>
+                              <Draggable 
+                                key={task.id} 
+                                draggableId={task.id} 
+                                index={index}
+                                isDragDisabled={isDragDisabled}
+                              >
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
@@ -471,7 +570,7 @@ const TasksPage: React.FC = () => {
                                       onEdit={handleEditTask}
                                       onDelete={deleteTask}
                                       onComplete={completeTask}
-                                      isDraggable
+                                      isDraggable={!isDragDisabled}
                                     />
                                   </div>
                                 )}
