@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { PlusCircle, CircleDot, CheckCircle, Clock, Search, Filter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -13,13 +13,19 @@ import TaskCard from '../components/tasks/TaskCard';
 import TaskForm from '../components/tasks/TaskForm';
 
 const TasksPage: React.FC = () => {
-  const { tasks, addTask, updateTask, deleteTask, completeTask, moveTask } = useTaskStore();
+  const { tasks, addTask, updateTask, deleteTask, completeTask, moveTask, fetchTasks, isLoading } = useTaskStore();
   const { t } = useTranslation(['tasks', 'common']);
   
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+  
+  // Fetch tasks on component mount
+  useEffect(() => {
+    console.log('🚀 TasksPage: Component mounted, fetching tasks...');
+    fetchTasks();
+  }, [fetchTasks]);
   
   // Get task being edited
   const editingTask = editingTaskId ? tasks.find(task => task.id === editingTaskId) : undefined;
@@ -46,25 +52,30 @@ const TasksPage: React.FC = () => {
   console.log('🔄 In Progress tasks:', inProgressTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
   console.log('✅ Completed tasks:', completedTasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
   console.log('📊 Task counts - Pending:', pendingTasks.length, 'In Progress:', inProgressTasks.length, 'Completed:', completedTasks.length);
+  console.log('⏳ Store loading state:', isLoading);
   
   const handleAddTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+    console.log('➕ TasksPage: Adding new task:', taskData);
     addTask(taskData);
     setShowAddTask(false);
   };
   
   const handleUpdateTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     if (editingTaskId) {
+      console.log('📝 TasksPage: Updating task:', editingTaskId, taskData);
       updateTask(editingTaskId, taskData);
       setEditingTaskId(null);
     }
   };
   
   const handleEditTask = (taskId: string) => {
+    console.log('✏️ TasksPage: Editing task:', taskId);
     setEditingTaskId(taskId);
     setShowAddTask(false);
   };
   
   const handleCancelEdit = () => {
+    console.log('❌ TasksPage: Cancelling edit');
     setEditingTaskId(null);
   };
   
@@ -115,6 +126,19 @@ const TasksPage: React.FC = () => {
       console.error("❌ Invalid destination status:", destination.droppableId);
     }
   };
+  
+  if (isLoading && tasks.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading tasks...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="container mx-auto px-4 py-8">
