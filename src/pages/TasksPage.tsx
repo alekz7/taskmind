@@ -60,6 +60,8 @@ const TasksPage: React.FC = () => {
   };
   
   const handleDragEnd = (result: DropResult) => {
+    console.log("Drag result", resilt);
+    console.log("All task", tasks)
     const { source, destination, draggableId } = result;
     
     // Drop outside valid drop zone
