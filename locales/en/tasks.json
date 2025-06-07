@@ -3,6 +3,12 @@
   "subtitle": "Manage and organize all your tasks",
   "newTask": "Create New Task",
   "form": {
+    "create": {
+      "title": "Create New Task"
+    },
+    "edit": {
+      "title": "Edit Task"
+    },
     "title": {
       "label": "Task Title",
       "placeholder": "Enter task title"
@@ -48,5 +54,12 @@
       "title": "Completed",
       "empty": "No completed tasks"
     }
+  },
+  "task": {
+    "estimatedTime": "{{time}}min",
+    "highPriorityWarning": "High priority task needs attention"
+  },
+  "validation": {
+    "required": "{{field}} is required"
   }
 }

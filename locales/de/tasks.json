@@ -3,6 +3,12 @@
   "subtitle": "Verwalten und organisieren Sie alle Ihre Aufgaben",
   "newTask": "Neue Aufgabe erstellen",
   "form": {
+    "create": {
+      "title": "Neue Aufgabe Erstellen"
+    },
+    "edit": {
+      "title": "Aufgabe Bearbeiten"
+    },
     "title": {
       "label": "Aufgabentitel",
       "placeholder": "Aufgabentitel eingeben"
@@ -48,5 +54,12 @@
       "title": "Abgeschlossen",
       "empty": "Keine abgeschlossenen Aufgaben"
     }
+  },
+  "task": {
+    "estimatedTime": "{{time}}min",
+    "highPriorityWarning": "Aufgabe mit hoher Priorität benötigt Aufmerksamkeit"
+  },
+  "validation": {
+    "required": "{{field}} ist erforderlich"
   }
 }

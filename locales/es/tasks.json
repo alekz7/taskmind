@@ -3,6 +3,12 @@
   "subtitle": "Gestiona y organiza todas tus tareas",
   "newTask": "Crear nueva tarea",
   "form": {
+    "create": {
+      "title": "Crear Nueva Tarea"
+    },
+    "edit": {
+      "title": "Editar Tarea"
+    },
     "title": {
       "label": "Título de la tarea",
       "placeholder": "Ingresa el título de la tarea"
@@ -48,5 +54,12 @@
       "title": "Completadas",
       "empty": "No hay tareas completadas"
     }
+  },
+  "task": {
+    "estimatedTime": "{{time}}min",
+    "highPriorityWarning": "Tarea de alta prioridad necesita atención"
+  },
+  "validation": {
+    "required": "{{field}} es requerido"
   }
 }
