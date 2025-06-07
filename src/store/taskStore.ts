@@ -195,35 +195,52 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   },
   
   moveTask: async (taskId, newStatus) => {
+    console.log(`🔄 moveTask called with taskId: ${taskId}, newStatus: ${newStatus}`);
+    
     const currentTasks = get().tasks;
     const taskToMove = currentTasks.find(task => task.id === taskId);
     
     if (!taskToMove) {
-      console.error('Task not found for move operation:', taskId);
+      console.error('❌ Task not found for move operation:', taskId);
       return;
     }
+
+    console.log(`📝 Found task to move:`, { id: taskToMove.id, title: taskToMove.title, currentStatus: taskToMove.status });
 
     // Optimistic update - update local state immediately
     const updatedTasks = currentTasks.map(task =>
       task.id === taskId ? { ...task, status: newStatus } : task
     );
     
+    console.log(`🔄 Applying optimistic update - changing status from ${taskToMove.status} to ${newStatus}`);
     set({ tasks: updatedTasks });
     
     try {
+      console.log(`🚀 Making Supabase API call to update task ${taskId}...`);
+      
       const { error } = await supabase
         .from('tasks')
         .update({ status: newStatus })
         .eq('id', taskId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
       
-      console.log(`✅ Task ${taskId} successfully moved to ${newStatus}`);
+      console.log(`✅ Task ${taskId} successfully moved to ${newStatus} in database`);
+      console.log(`📊 Current task distribution after move:`, {
+        pending: updatedTasks.filter(t => t.status === 'pending').length,
+        inProgress: updatedTasks.filter(t => t.status === 'in-progress').length,
+        completed: updatedTasks.filter(t => t.status === 'completed').length
+      });
+      
     } catch (error) {
+      console.error('❌ Failed to move task in database, reverting optimistic update:', error);
       // Revert optimistic update on error
       set({ tasks: currentTasks });
       set({ error: error instanceof Error ? error.message : 'Failed to move task' });
-      console.error('❌ Failed to move task, reverted local state:', error);
+      throw error; // Re-throw so the UI can handle it
     }
   },
   

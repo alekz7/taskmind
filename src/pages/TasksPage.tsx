@@ -68,7 +68,8 @@ const TasksPage: React.FC = () => {
     setEditingTaskId(null);
   };
   
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = async (result: DropResult) => {
+    console.log("🎯 DRAG END TRIGGERED!");
     console.log("🎯 Drag result:", result);
     console.log("📋 All tasks at drag end:", tasks.map(t => ({ id: t.id, title: t.title, status: t.status })));
     
@@ -100,9 +101,16 @@ const TasksPage: React.FC = () => {
     const oldStatus = statusMap[source.droppableId];
     
     console.log(`🔄 Moving task ${draggableId} from ${oldStatus} to ${newStatus}`);
+    console.log(`📍 Source: ${source.droppableId}[${source.index}] -> Destination: ${destination.droppableId}[${destination.index}]`);
     
     if (newStatus) {
-      moveTask(draggableId, newStatus);
+      console.log(`🚀 Calling moveTask function...`);
+      try {
+        await moveTask(draggableId, newStatus);
+        console.log(`✅ moveTask completed successfully for task ${draggableId}`);
+      } catch (error) {
+        console.error(`❌ moveTask failed for task ${draggableId}:`, error);
+      }
     } else {
       console.error("❌ Invalid destination status:", destination.droppableId);
     }
