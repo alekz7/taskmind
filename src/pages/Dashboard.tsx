@@ -17,7 +17,7 @@ import AISuggestionList from '../components/ai/AISuggestionList';
 
 const Dashboard: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, completeTask, fetchTasks, isInitialized, isLoading } = useTaskStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthInitialized } = useAuthStore();
   const { 
     suggestions, 
     generateSuggestions, 
@@ -33,9 +33,9 @@ const Dashboard: React.FC = () => {
   // Fetch tasks when component mounts and user is authenticated
   useEffect(() => {
     console.log('🚀 Dashboard: Component mounted, checking auth state...');
-    console.log('🔐 Auth state:', { isAuthenticated, isInitialized });
+    console.log('🔐 Auth state:', { isAuthenticated, isAuthInitialized, isInitialized });
     
-    if (isAuthenticated && !isInitialized) {
+    if (isAuthInitialized && isAuthenticated && !isInitialized) {
       console.log('✅ User authenticated and tasks not initialized, fetching tasks...');
       fetchTasks();
     } else if (!isAuthenticated) {
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
     } else if (isInitialized) {
       console.log('✅ Tasks already initialized');
     }
-  }, [isAuthenticated, isInitialized, fetchTasks]);
+  }, [isAuthenticated, isAuthInitialized, isInitialized, fetchTasks]);
   
   // Filter tasks
   const today = new Date().setHours(0, 0, 0, 0);
@@ -106,8 +106,8 @@ const Dashboard: React.FC = () => {
   const completionRate = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
   const highPriorityCount = tasks.filter(task => task.priority === 'high' && task.status !== 'completed').length;
   
-  // Show loading state while tasks are being fetched initially
-  if (!isInitialized && isLoading) {
+  // Show loading state while auth is being initialized or tasks are being fetched initially
+  if (!isAuthInitialized || (!isInitialized && isLoading)) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center h-64">

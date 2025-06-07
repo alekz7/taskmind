@@ -16,14 +16,33 @@ import TasksPage from './pages/TasksPage';
 
 // Protected route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthInitialized } = useAuthStore();
+  
+  // Show loading while auth is being initialized
+  if (!isAuthInitialized) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Initializing...</p>
+        </div>
+      </div>
+    );
+  }
+  
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 function App() {
   const { theme } = useThemeStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthInitialized, initializeAuth } = useAuthStore();
   const { reset: resetTasks } = useTaskStore();
+
+  // Initialize authentication on app start
+  useEffect(() => {
+    console.log('🚀 App: Initializing authentication...');
+    initializeAuth();
+  }, [initializeAuth]);
 
   // Apply theme class to html element
   useEffect(() => {
@@ -33,11 +52,11 @@ function App() {
 
   // Reset task store when user logs out
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isAuthInitialized && !isAuthenticated) {
       console.log('🔄 User logged out, resetting task store');
       resetTasks();
     }
-  }, [isAuthenticated, resetTasks]);
+  }, [isAuthenticated, isAuthInitialized, resetTasks]);
 
   return (
     <Router>

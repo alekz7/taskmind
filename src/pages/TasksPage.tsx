@@ -15,7 +15,7 @@ import TaskForm from '../components/tasks/TaskForm';
 
 const TasksPage: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, completeTask, moveTask, fetchTasks, isLoading, isInitialized } = useTaskStore();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isAuthInitialized } = useAuthStore();
   const { t } = useTranslation(['tasks', 'common']);
   
   const [showAddTask, setShowAddTask] = useState(false);
@@ -27,9 +27,9 @@ const TasksPage: React.FC = () => {
   // Fetch tasks when component mounts and user is authenticated
   useEffect(() => {
     console.log('🚀 TasksPage: Component mounted, checking auth state...');
-    console.log('🔐 Auth state:', { isAuthenticated, isInitialized });
+    console.log('🔐 Auth state:', { isAuthenticated, isAuthInitialized, isInitialized });
     
-    if (isAuthenticated && !isInitialized) {
+    if (isAuthInitialized && isAuthenticated && !isInitialized) {
       console.log('✅ User authenticated and tasks not initialized, fetching tasks...');
       fetchTasks();
     } else if (!isAuthenticated) {
@@ -37,12 +37,13 @@ const TasksPage: React.FC = () => {
     } else if (isInitialized) {
       console.log('✅ Tasks already initialized');
     }
-  }, [isAuthenticated, isInitialized, fetchTasks]);
+  }, [isAuthenticated, isAuthInitialized, isInitialized, fetchTasks]);
   
   // Enable drag only after tasks are loaded and ready
   useEffect(() => {
-    const shouldEnableDrag = isInitialized && !isLoading && tasks.length > 0;
+    const shouldEnableDrag = isAuthInitialized && isInitialized && !isLoading && tasks.length > 0;
     console.log('🎯 Drag state check:', {
+      isAuthInitialized,
       isInitialized,
       isLoading,
       tasksCount: tasks.length,
@@ -57,7 +58,7 @@ const TasksPage: React.FC = () => {
       console.log('⏳ Disabling drag and drop');
       setIsDragDisabled(true);
     }
-  }, [isInitialized, isLoading, tasks.length, isDragDisabled]);
+  }, [isAuthInitialized, isInitialized, isLoading, tasks.length, isDragDisabled]);
   
   // Get task being edited
   const editingTask = editingTaskId ? tasks.find(task => task.id === editingTaskId) : undefined;
@@ -88,8 +89,8 @@ const TasksPage: React.FC = () => {
     });
     console.log('📝 All task IDs in store:', tasks.map(t => t.id));
     console.log('🎯 Drag disabled:', isDragDisabled);
-    console.log('🔄 Store state:', { isLoading, isInitialized });
-  }, [tasks, filteredTasks, pendingTasks, inProgressTasks, completedTasks, isDragDisabled, isLoading, isInitialized]);
+    console.log('🔄 Store state:', { isLoading, isInitialized, isAuthInitialized });
+  }, [tasks, filteredTasks, pendingTasks, inProgressTasks, completedTasks, isDragDisabled, isLoading, isInitialized, isAuthInitialized]);
   
   const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     console.log('➕ TasksPage: Adding new task:', taskData);
@@ -241,8 +242,8 @@ const TasksPage: React.FC = () => {
     }
   };
   
-  // Show loading state while tasks are being fetched initially
-  if (!isInitialized && isLoading) {
+  // Show loading state while auth is being initialized or tasks are being fetched initially
+  if (!isAuthInitialized || (!isInitialized && isLoading)) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-center h-64">
