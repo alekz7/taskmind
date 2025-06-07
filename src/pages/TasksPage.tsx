@@ -199,7 +199,7 @@ const TasksPage: React.FC = () => {
                   {
                     
                     (provided, snapshot) => (
-                      console.log("Rendering Droppable: pending");
+                      console.log("Rendering Droppable: pending")
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
