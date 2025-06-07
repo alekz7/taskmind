@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { useAuthStore } from './store/authStore';
+import { useTaskStore } from './store/taskStore';
 import { useThemeStore } from './store/themeStore';
 import Navbar from './components/layout/Navbar';
 
@@ -21,12 +22,22 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 function App() {
   const { theme } = useThemeStore();
+  const { isAuthenticated } = useAuthStore();
+  const { reset: resetTasks } = useTaskStore();
 
   // Apply theme class to html element
   useEffect(() => {
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);
+
+  // Reset task store when user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('🔄 User logged out, resetting task store');
+      resetTasks();
+    }
+  }, [isAuthenticated, resetTasks]);
 
   return (
     <Router>
@@ -53,7 +64,7 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route path="*" element={<Navigate to="/\" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <ToastContainer position="bottom-right" theme={theme} />

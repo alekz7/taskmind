@@ -6,6 +6,7 @@ interface TaskState {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
+  isInitialized: boolean;
   
   // Actions
   fetchTasks: () => Promise<void>;
@@ -17,26 +18,49 @@ interface TaskState {
   setTasks: (tasks: Task[]) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  reset: () => void;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: [],
   isLoading: false,
   error: null,
+  isInitialized: false,
   
   fetchTasks: async () => {
     console.log('🔄 fetchTasks: Starting to fetch tasks from database...');
     set({ isLoading: true, error: null });
     
     try {
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log('❌ fetchTasks: No authenticated user found');
+        set({ tasks: [], isLoading: false, isInitialized: true });
+        return;
+      }
+
+      console.log('👤 fetchTasks: Authenticated user:', user.id);
       console.log('📡 fetchTasks: Making Supabase query...');
       
       const { data, error } = await supabase
         .from('tasks')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          due_date,
+          priority,
+          status,
+          estimated_time,
+          actual_time,
+          created_at,
+          updated_at,
+          user_id,
           category:categories(name, color)
         `)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       console.log('📡 fetchTasks: Raw Supabase response:', { data, error });
@@ -48,7 +72,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
       if (!data) {
         console.log('⚠️ fetchTasks: No data returned from Supabase');
-        set({ tasks: [], isLoading: false });
+        set({ tasks: [], isLoading: false, isInitialized: true });
         return;
       }
 
@@ -88,13 +112,13 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         completed: tasks.filter(t => t.status === 'completed').length
       });
 
-      set({ tasks, isLoading: false });
+      set({ tasks, isLoading: false, isInitialized: true });
       console.log('✅ fetchTasks: Tasks successfully loaded into store');
       
     } catch (error) {
       console.error('❌ fetchTasks: Error occurred:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tasks';
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isLoading: false, isInitialized: true });
     }
   },
   
@@ -103,6 +127,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ isLoading: true });
     
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       let categoryId = null;
       if (taskData.category) {
         console.log('🏷️ addTask: Processing category:', taskData.category);
@@ -111,13 +139,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           .from('categories')
           .select('id')
           .eq('name', taskData.category)
+          .eq('user_id', user.id)
           .single();
 
         if (!existingCategory) {
           console.log('🆕 addTask: Creating new category:', taskData.category);
           const { data: newCategory, error: categoryError } = await supabase
             .from('categories')
-            .insert([{ name: taskData.category }])
+            .insert([{ 
+              name: taskData.category,
+              user_id: user.id 
+            }])
             .select('id')
             .single();
 
@@ -140,6 +172,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           category_id: categoryId,
           estimated_time: taskData.estimatedTime,
           actual_time: taskData.actualTime,
+          user_id: user.id,
         }])
         .select()
         .single();
@@ -162,18 +195,25 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     set({ isLoading: true });
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       let categoryId = null;
       if (updates.category) {
         const { data: existingCategory } = await supabase
           .from('categories')
           .select('id')
           .eq('name', updates.category)
+          .eq('user_id', user.id)
           .single();
 
         if (!existingCategory) {
           const { data: newCategory, error: categoryError } = await supabase
             .from('categories')
-            .insert([{ name: updates.category }])
+            .insert([{ 
+              name: updates.category,
+              user_id: user.id 
+            }])
             .select('id')
             .single();
 
@@ -184,19 +224,21 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         }
       }
 
+      const updateData: any = {};
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.dueDate !== undefined) updateData.due_date = updates.dueDate;
+      if (updates.priority !== undefined) updateData.priority = updates.priority;
+      if (updates.status !== undefined) updateData.status = updates.status;
+      if (categoryId !== null) updateData.category_id = categoryId;
+      if (updates.estimatedTime !== undefined) updateData.estimated_time = updates.estimatedTime;
+      if (updates.actualTime !== undefined) updateData.actual_time = updates.actualTime;
+
       const { error } = await supabase
         .from('tasks')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          due_date: updates.dueDate,
-          priority: updates.priority,
-          status: updates.status,
-          category_id: categoryId,
-          estimated_time: updates.estimatedTime,
-          actual_time: updates.actualTime,
-        })
-        .eq('id', id);
+        .update(updateData)
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -215,10 +257,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     console.log(`🗑️ deleteTask: Starting to delete task ${id}`);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       const { error } = await supabase
         .from('tasks')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -238,10 +284,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     console.log(`✅ completeTask: Starting to complete task ${id}`);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       const { error } = await supabase
         .from('tasks')
         .update({ status: 'completed' })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
@@ -314,10 +364,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       console.log(`🚀 moveTask: Updating database for task ${taskId}...`);
       
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
       const { error } = await supabase
         .from('tasks')
         .update({ status: newStatus })
-        .eq('id', taskId);
+        .eq('id', taskId)
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('❌ moveTask: Database update failed:', error);
@@ -353,5 +407,15 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   setError: (error) => {
     console.log('❌ setError:', error);
     set({ error });
+  },
+
+  reset: () => {
+    console.log('🔄 reset: Resetting task store');
+    set({ 
+      tasks: [], 
+      isLoading: false, 
+      error: null, 
+      isInitialized: false 
+    });
   },
 }));
