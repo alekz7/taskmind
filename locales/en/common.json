@@ -19,7 +19,8 @@
     "save": "Save",
     "apply": "Apply",
     "dismiss": "Dismiss",
-    "complete": "Complete"
+    "complete": "Complete",
+    "confirm": "Confirm"
   },
   "status": {
     "loading": "Loading...",
