@@ -1,111 +1,178 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { Plus, Clock, Sparkles, Calendar, Layout, BarChart } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { format } from "date-fns";
+import {
+  Plus,
+  Clock,
+  Sparkles,
+  Calendar,
+  Layout,
+  BarChart,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { useTaskStore } from '../store/taskStore';
-import { useAuthStore } from '../store/authStore';
-import { useAISuggestionStore } from '../store/aiSuggestionStore';
-import { Task } from '../types';
+import { useTaskStore } from "../store/taskStore";
+import { useAuthStore } from "../store/authStore";
+import { useAISuggestionStore } from "../store/aiSuggestionStore";
+import { Task } from "../types";
 
-import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import TaskList from '../components/tasks/TaskList';
-import TaskForm from '../components/tasks/TaskForm';
-import AISuggestionList from '../components/ai/AISuggestionList';
+import Card, {
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import TaskList from "../components/tasks/TaskList";
+import TaskForm from "../components/tasks/TaskForm";
+import AISuggestionList from "../components/ai/AISuggestionList";
+import { ta } from "date-fns/locale";
 
 const Dashboard: React.FC = () => {
-  const { tasks, addTask, updateTask, deleteTask, completeTask, fetchTasks, isInitialized, isLoading } = useTaskStore();
+  const {
+    tasks,
+    addTask,
+    updateTask,
+    deleteTask,
+    completeTask,
+    fetchTasks,
+    isInitialized,
+    isLoading,
+  } = useTaskStore();
   const { isAuthenticated, isAuthInitialized } = useAuthStore();
-  const { 
-    suggestions, 
-    generateSuggestions, 
-    applySuggestion, 
+  const {
+    suggestions,
+    generateSuggestions,
+    applySuggestion,
     dismissSuggestion,
-    isLoading: suggestionsLoading 
+    isLoading: suggestionsLoading,
   } = useAISuggestionStore();
-  const { t } = useTranslation(['dashboard', 'common']);
-  
+  const { t } = useTranslation(["dashboard", "common"]);
+
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-  
+
   // Fetch tasks when component mounts and user is authenticated
   useEffect(() => {
-    console.log('🚀 Dashboard: Component mounted, checking auth state...');
-    console.log('🔐 Auth state:', { isAuthenticated, isAuthInitialized, isInitialized });
-    
+    console.log("🚀 Dashboard: Component mounted, checking auth state...");
+    console.log("🔐 Auth state:", {
+      isAuthenticated,
+      isAuthInitialized,
+      isInitialized,
+    });
+
     if (isAuthInitialized && isAuthenticated && !isInitialized) {
-      console.log('✅ User authenticated and tasks not initialized, fetching tasks...');
+      console.log(
+        "✅ User authenticated and tasks not initialized, fetching tasks..."
+      );
       fetchTasks();
     } else if (!isAuthenticated) {
-      console.log('❌ User not authenticated, skipping task fetch');
+      console.log("❌ User not authenticated, skipping task fetch");
     } else if (isInitialized) {
-      console.log('✅ Tasks already initialized');
+      console.log("✅ Tasks already initialized");
     }
   }, [isAuthenticated, isAuthInitialized, isInitialized, fetchTasks]);
-  
+
   // Filter tasks
-  const today = new Date().setHours(0, 0, 0, 0);
-  const todayTasks = tasks.filter(task => 
-    task.status !== 'completed' && 
-    (task.dueDate ? new Date(task.dueDate).setHours(0, 0, 0, 0) <= today : true)
+  const today = new Date();
+  console.log("📅 Today's date:", new Date(today));
+  console.log("Tasks:", tasks);
+  const todayTasks = tasks.filter(
+    (task) =>
+      task.status !== "completed" &&
+      (task.dueDate ? new Date(task.dueDate) <= today : true)
   );
-  
-  const upcomingTasks = tasks.filter(task => 
-    task.status !== 'completed' && 
-    (task.dueDate ? new Date(task.dueDate).setHours(0, 0, 0, 0) > today : false)
+
+  // I want to see the result to compare all tasks with today in DueDate
+  console.log("📅 Today's tasks:", today);
+  for (const task of tasks) {
+    const taskDueDate = task.dueDate;
+    if (taskDueDate) {
+      const taskDate = new Date(taskDueDate);
+      // console.log(
+      //   `Task ID: ${task.id}, Due Date: ${taskDueDate}, Task Date: ${taskDate}, Today: ${today}`
+      // );
+      console.log(today, new Date(taskDate));
+      if (new Date(taskDate) <= today) {
+        console.log(`Task ID: ${task.id} is due today or overdue`);
+      } else {
+        console.log(`Task ID: ${task.id} is not due today`);
+      }
+    } else {
+      console.log(`Task ID: ${task.id} has no due date`);
+    }
+  }
+
+  const upcomingTasks = tasks.filter(
+    (task) =>
+      task.status !== "completed" &&
+      (task.dueDate ? new Date(task.dueDate) > today : false)
   );
-  
-  const completedTasks = tasks.filter(task => task.status === 'completed')
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  console.log("🔍 Upcoming tasks:", upcomingTasks);
+
+  const completedTasks = tasks
+    .filter((task) => task.status === "completed")
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )
     .slice(0, 5);
-  
+
   // Get task being edited
-  const editingTask = editingTaskId ? tasks.find(task => task.id === editingTaskId) : undefined;
-  
+  const editingTask = editingTaskId
+    ? tasks.find((task) => task.id === editingTaskId)
+    : undefined;
+
   // Generate AI suggestions
   useEffect(() => {
     if (tasks.length > 0) {
       generateSuggestions(tasks);
     }
   }, [tasks.length]);
-  
-  const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+
+  const handleAddTask = async (
+    taskData: Omit<Task, "id" | "createdAt" | "updatedAt" | "userId">
+  ) => {
     try {
       await addTask(taskData);
       setShowAddTask(false);
     } catch (error) {
-      console.error('Failed to add task:', error);
+      console.error("Failed to add task:", error);
     }
   };
-  
-  const handleUpdateTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
+
+  const handleUpdateTask = async (
+    taskData: Omit<Task, "id" | "createdAt" | "updatedAt" | "userId">
+  ) => {
     if (editingTaskId) {
       try {
         await updateTask(editingTaskId, taskData);
         setEditingTaskId(null);
       } catch (error) {
-        console.error('Failed to update task:', error);
+        console.error("Failed to update task:", error);
       }
     }
   };
-  
+
   const handleEditTask = (taskId: string) => {
     setEditingTaskId(taskId);
     setShowAddTask(false);
   };
-  
+
   const handleCancelEdit = () => {
     setEditingTaskId(null);
   };
-  
+
   // Task metrics
   const totalTasks = tasks.length;
-  const completedTasksCount = tasks.filter(task => task.status === 'completed').length;
-  const completionRate = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
-  const highPriorityCount = tasks.filter(task => task.priority === 'high' && task.status !== 'completed').length;
-  
+  const completedTasksCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+  const completionRate =
+    totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
+  const highPriorityCount = tasks.filter(
+    (task) => task.priority === "high" && task.status !== "completed"
+  ).length;
+
   // Show loading state while auth is being initialized or tasks are being fetched initially
   if (!isAuthInitialized || (!isInitialized && isLoading)) {
     return (
@@ -113,7 +180,9 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Loading dashboard...</p>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading dashboard...
+            </p>
           </div>
         </div>
       </div>
@@ -125,36 +194,42 @@ const Dashboard: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">Please log in to view your dashboard.</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            Please log in to view your dashboard.
+          </p>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t("title")}
+          </h1>
           <p className="text-gray-600 dark:text-gray-300 mt-1">
-            {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            {format(new Date(), "EEEE, MMMM d, yyyy")}
           </p>
         </div>
-        
+
         <div className="mt-4 md:mt-0">
           <Button
-            variant={showAddTask ? 'ghost' : 'primary'}
+            variant={showAddTask ? "ghost" : "primary"}
             leftIcon={showAddTask ? <Clock size={18} /> : <Plus size={18} />}
             onClick={() => {
               setShowAddTask(!showAddTask);
               setEditingTaskId(null);
             }}
           >
-            {showAddTask ? t('common:actions.cancel') : t('common:actions.create')}
+            {showAddTask
+              ? t("common:actions.cancel")
+              : t("common:actions.create")}
           </Button>
         </div>
       </div>
-      
+
       {/* Task Form */}
       {showAddTask && (
         <div className="mb-8">
@@ -164,7 +239,7 @@ const Dashboard: React.FC = () => {
           />
         </div>
       )}
-      
+
       {editingTaskId && (
         <div className="mb-8">
           <TaskForm
@@ -174,7 +249,7 @@ const Dashboard: React.FC = () => {
           />
         </div>
       )}
-      
+
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <motion.div
@@ -189,11 +264,16 @@ const Dashboard: React.FC = () => {
                   <BarChart size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('metrics.completionRate.title')}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {t("metrics.completionRate.title")}
+                  </p>
                   <div className="flex items-baseline">
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">{completionRate}%</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {completionRate}%
+                    </p>
                     <p className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      ({completedTasksCount}/{totalTasks} {t('metrics.completionRate.tasks')})
+                      ({completedTasksCount}/{totalTasks}{" "}
+                      {t("metrics.completionRate.tasks")})
                     </p>
                   </div>
                 </div>
@@ -201,7 +281,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -214,11 +294,15 @@ const Dashboard: React.FC = () => {
                   <Clock size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('metrics.todayTasks.title')}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {t("metrics.todayTasks.title")}
+                  </p>
                   <div className="flex items-baseline">
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">{todayTasks.length}</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {todayTasks.length}
+                    </p>
                     <p className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      {t('metrics.todayTasks.remaining')}
+                      {t("metrics.todayTasks.remaining")}
                     </p>
                   </div>
                 </div>
@@ -226,7 +310,7 @@ const Dashboard: React.FC = () => {
             </CardContent>
           </Card>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -239,11 +323,15 @@ const Dashboard: React.FC = () => {
                   <Layout size={24} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('metrics.highPriority.title')}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    {t("metrics.highPriority.title")}
+                  </p>
                   <div className="flex items-baseline">
-                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">{highPriorityCount}</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                      {highPriorityCount}
+                    </p>
                     <p className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      {t('metrics.highPriority.attention')}
+                      {t("metrics.highPriority.attention")}
                     </p>
                   </div>
                 </div>
@@ -252,7 +340,7 @@ const Dashboard: React.FC = () => {
           </Card>
         </motion.div>
       </div>
-      
+
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Today's Tasks */}
@@ -260,47 +348,47 @@ const Dashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center">
               <Calendar className="mr-2 h-5 w-5 text-gray-500" />
-              {t('sections.todayTasks.title')}
+              {t("sections.todayTasks.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">
             <TaskList
               tasks={todayTasks}
               title=""
-              emptyMessage={t('sections.todayTasks.empty')}
+              emptyMessage={t("sections.todayTasks.empty")}
               onEdit={handleEditTask}
               onDelete={deleteTask}
               onComplete={completeTask}
             />
           </CardContent>
         </Card>
-        
+
         {/* Upcoming Tasks */}
         <Card className="lg:col-span-1 h-[600px]">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Clock className="mr-2 h-5 w-5 text-gray-500" />
-              {t('sections.upcomingTasks.title')}
+              {t("sections.upcomingTasks.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">
             <TaskList
               tasks={upcomingTasks}
               title=""
-              emptyMessage={t('sections.upcomingTasks.empty')}
+              emptyMessage={t("sections.upcomingTasks.empty")}
               onEdit={handleEditTask}
               onDelete={deleteTask}
               onComplete={completeTask}
             />
           </CardContent>
         </Card>
-        
+
         {/* AI Suggestions */}
         <Card className="lg:col-span-1 h-[600px]">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Sparkles className="mr-2 h-5 w-5 text-primary-500" />
-              {t('sections.aiInsights.title')}
+              {t("sections.aiInsights.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(600px-60px)]">

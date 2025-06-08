@@ -1,18 +1,43 @@
+/**
+ * Task Management Store using Zustand
+ * 
+ * This store manages all task-related state and operations for the TaskMind application.
+ * It provides a clean interface for CRUD operations on tasks with Firebase Firestore.
+ * 
+ * Features:
+ * - Real-time task synchronization with Firestore
+ * - Optimistic updates for better UX
+ * - Comprehensive error handling
+ * - Loading states for all operations
+ * - Task filtering and organization
+ */
+
 import { create } from "zustand";
 import { Task } from "../types";
-import { supabase } from "../lib/supabase";
+import { 
+  getUserTasks, 
+  createTask, 
+  updateTask as updateTaskInFirestore, 
+  deleteTask as deleteTaskFromFirestore,
+  subscribeToUserTasks 
+} from "../lib/firestore";
+import { auth } from "../lib/firebase";
 
+/**
+ * Task Store State Interface
+ * Defines the shape of the task store state and available actions
+ */
 interface TaskState {
-  tasks: Task[];
-  isLoading: boolean;
-  error: string | null;
-  isInitialized: boolean;
+  // State properties
+  tasks: Task[];                    // Array of all user tasks
+  isLoading: boolean;              // Loading state for async operations
+  error: string | null;            // Error message if any operation fails
+  isInitialized: boolean;          // Whether tasks have been loaded initially
+  realtimeUnsubscribe: (() => void) | null; // Function to unsubscribe from real-time updates
 
-  // Actions
+  // Action methods
   fetchTasks: () => Promise<void>;
-  addTask: (
-    task: Omit<Task, "id" | "createdAt" | "updatedAt" | "userId">
-  ) => Promise<void>;
+  addTask: (task: Omit<Task, "id" | "createdAt" | "updatedAt" | "userId">) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   completeTask: (id: string) => Promise<void>;
@@ -21,107 +46,48 @@ interface TaskState {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
+  setupRealtimeSync: (userId: string) => void;
+  cleanupRealtimeSync: () => void;
 }
 
+/**
+ * Create the task store with Zustand
+ * Manages all task-related state and operations
+ */
 export const useTaskStore = create<TaskState>((set, get) => ({
+  // Initial state
   tasks: [],
   isLoading: false,
   error: null,
   isInitialized: false,
+  realtimeUnsubscribe: null,
 
+  /**
+   * Fetch Tasks from Firestore
+   * Loads all tasks for the current user from the database
+   * This is typically called once when the user logs in
+   */
   fetchTasks: async () => {
-    console.log("🔄 fetchTasks: Starting to fetch tasks from database...");
+    console.log("🔄 fetchTasks: Starting to fetch tasks from Firestore...");
     set({ isLoading: true, error: null });
 
     try {
       // Check if user is authenticated
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError) {
-        console.error("❌ fetchTasks: Auth error:", authError);
-        throw authError;
-      }
-
-      if (!user) {
+      const currentUser = auth.currentUser;
+      
+      if (!currentUser) {
         console.log("❌ fetchTasks: No authenticated user found");
         set({ tasks: [], isLoading: false, isInitialized: true });
         return;
       }
 
-      console.log("👤 fetchTasks: Authenticated user:", user.id);
-      console.log("📡 fetchTasks: Making Supabase query...");
+      console.log("👤 fetchTasks: Authenticated user:", currentUser.uid);
+      console.log("📡 fetchTasks: Making Firestore query...");
 
-      const { data, error } = await supabase
-        .from("tasks")
-        .select(
-          `
-          id,
-          title,
-          description,
-          due_date,
-          priority,
-          status,
-          estimated_time,
-          actual_time,
-          created_at,
-          updated_at,
-          user_id,
-          category:categories(name, color)
-        `
-        )
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      // Fetch tasks from Firestore
+      const tasks = await getUserTasks(currentUser.uid);
 
-      console.log("📡 fetchTasks: Raw Supabase response:", { data, error });
-
-      if (error) {
-        console.error("❌ fetchTasks: Supabase error:", error);
-        throw error;
-      }
-
-      if (!data) {
-        console.log("⚠️ fetchTasks: No data returned from Supabase");
-        set({ tasks: [], isLoading: false, isInitialized: true });
-        return;
-      }
-
-      console.log(
-        `📊 fetchTasks: Retrieved ${data.length} tasks from database`
-      );
-
-      const tasks: Task[] = data.map((task, index) => {
-        console.log(
-          `🔄 fetchTasks: Mapping task ${index + 1}/${data.length}:`,
-          {
-            id: task.id,
-            title: task.title,
-            status: task.status,
-            priority: task.priority,
-          }
-        );
-
-        const mappedTask: Task = {
-          id: task.id,
-          title: task.title,
-          description: task.description || "",
-          dueDate: task.due_date,
-          priority: task.priority,
-          status: task.status,
-          category: task.category?.name || "",
-          estimatedTime: task.estimated_time,
-          actualTime: task.actual_time,
-          createdAt: task.created_at,
-          updatedAt: task.updated_at,
-          userId: task.user_id,
-        };
-
-        return mappedTask;
-      });
-
-      console.log("📋 fetchTasks: All mapped tasks:", tasks);
+      console.log(`📊 fetchTasks: Retrieved ${tasks.length} tasks from database`);
       console.log("📊 fetchTasks: Task distribution:", {
         total: tasks.length,
         pending: tasks.filter((t) => t.status === "pending").length,
@@ -129,289 +95,187 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         completed: tasks.filter((t) => t.status === "completed").length,
       });
 
+      // Update store with fetched tasks
       set({ tasks, isLoading: false, isInitialized: true });
       console.log("✅ fetchTasks: Tasks successfully loaded into store");
+      
     } catch (error) {
       console.error("❌ fetchTasks: Error occurred:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to fetch tasks";
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch tasks";
       set({ error: errorMessage, isLoading: false, isInitialized: true });
     }
   },
 
+  /**
+   * Add New Task
+   * Creates a new task in Firestore and updates local state
+   * 
+   * @param taskData - Task data without ID, timestamps, and userId
+   */
   addTask: async (taskData) => {
     console.log("➕ addTask: Starting to add task:", taskData);
     set({ isLoading: true, error: null });
 
     try {
-      // Get current user with better error handling
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      // Get current authenticated user
+      const currentUser = auth.currentUser;
 
-      // if (authError) {
-      //   console.error('❌ addTask: Auth error:', authError);
-      //   throw new Error(`Authentication failed: ${authError.message}`);
-      // }
-
-      if (!user) {
+      if (!currentUser) {
         console.error("❌ addTask: No authenticated user");
         throw new Error("No authenticated user found. Please log in again.");
       }
 
-      console.log("👤 addTask: Authenticated user:", user.id);
+      console.log("👤 addTask: Authenticated user:", currentUser.uid);
 
-      let categoryId = null;
-      if (taskData.category) {
-        console.log("🏷️ addTask: Processing category:", taskData.category);
+      // Create task in Firestore
+      console.log("📡 addTask: Creating task in Firestore...");
+      const taskId = await createTask(currentUser.uid, taskData);
 
-        const { data: existingCategory } = await supabase
-          .from("categories")
-          .select("id")
-          .eq("name", taskData.category)
-          .eq("user_id", user.id)
-          .single();
+      console.log("✅ addTask: Task created successfully with ID:", taskId);
 
-        if (!existingCategory) {
-          console.log("🆕 addTask: Creating new category:", taskData.category);
-          const { data: newCategory, error: categoryError } = await supabase
-            .from("categories")
-            .insert([
-              {
-                name: taskData.category,
-                user_id: user.id,
-              },
-            ])
-            .select("id")
-            .single();
+      // Create complete task object for local state
+      const newTask: Task = {
+        id: taskId,
+        ...taskData,
+        userId: currentUser.uid,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-          if (categoryError) {
-            console.error(
-              "❌ addTask: Category creation error:",
-              categoryError
-            );
-            throw categoryError;
-          }
-          categoryId = newCategory.id;
-        } else {
-          categoryId = existingCategory.id;
-        }
-      }
+      // Update local state optimistically
+      set((state) => ({
+        tasks: [newTask, ...state.tasks],
+        isLoading: false
+      }));
 
-      console.log("📡 addTask: Inserting task into database...");
-      const { data, error } = await supabase
-        .from("tasks")
-        .insert([
-          {
-            title: taskData.title,
-            description: taskData.description || "",
-            due_date: taskData.dueDate,
-            priority: taskData.priority,
-            status: taskData.status,
-            category_id: categoryId,
-            estimated_time: taskData.estimatedTime,
-            actual_time: taskData.actualTime,
-            user_id: user.id,
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("❌ addTask: Database insert error:", error);
-        throw error;
-      }
-
-      console.log("✅ addTask: Task inserted successfully:", data);
-
-      // Refresh tasks to get the latest data
-      await get().fetchTasks();
-      set({ isLoading: false });
+      console.log("✅ addTask: Task added to local state");
+      
     } catch (error) {
       console.error("❌ addTask: Error occurred:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to add task";
+      const errorMessage = error instanceof Error ? error.message : "Failed to add task";
       set({ error: errorMessage, isLoading: false });
       throw error; // Re-throw so the UI can handle it
     }
   },
 
+  /**
+   * Update Existing Task
+   * Updates a task in Firestore and local state
+   * 
+   * @param id - Task ID to update
+   * @param updates - Partial task data to update
+   */
   updateTask: async (id, updates) => {
     console.log(`📝 updateTask: Starting to update task ${id}:`, updates);
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      // Get current authenticated user
+      const currentUser = auth.currentUser;
 
-      if (authError) {
-        console.error("❌ updateTask: Auth error:", authError);
-        throw authError;
-      }
-
-      if (!user) {
+      if (!currentUser) {
         throw new Error("No authenticated user found");
       }
 
-      let categoryId = null;
-      if (updates.category) {
-        const { data: existingCategory } = await supabase
-          .from("categories")
-          .select("id")
-          .eq("name", updates.category)
-          .eq("user_id", user.id)
-          .single();
+      // Update task in Firestore
+      await updateTaskInFirestore(id, updates);
+      console.log(`✅ updateTask: Task ${id} updated in Firestore`);
 
-        if (!existingCategory) {
-          const { data: newCategory, error: categoryError } = await supabase
-            .from("categories")
-            .insert([
-              {
-                name: updates.category,
-                user_id: user.id,
-              },
-            ])
-            .select("id")
-            .single();
+      // Update local state optimistically
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === id 
+            ? { ...task, ...updates, updatedAt: new Date().toISOString() }
+            : task
+        ),
+        isLoading: false
+      }));
 
-          if (categoryError) throw categoryError;
-          categoryId = newCategory.id;
-        } else {
-          categoryId = existingCategory.id;
-        }
-      }
-
-      const updateData: any = {};
-      if (updates.title !== undefined) updateData.title = updates.title;
-      if (updates.description !== undefined)
-        updateData.description = updates.description;
-      if (updates.dueDate !== undefined) updateData.due_date = updates.dueDate;
-      if (updates.priority !== undefined)
-        updateData.priority = updates.priority;
-      if (updates.status !== undefined) updateData.status = updates.status;
-      if (categoryId !== null) updateData.category_id = categoryId;
-      if (updates.estimatedTime !== undefined)
-        updateData.estimated_time = updates.estimatedTime;
-      if (updates.actualTime !== undefined)
-        updateData.actual_time = updates.actualTime;
-
-      const { error } = await supabase
-        .from("tasks")
-        .update(updateData)
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      console.log(`✅ updateTask: Task ${id} updated successfully`);
-      await get().fetchTasks(); // Refresh tasks
-      set({ isLoading: false });
+      console.log(`✅ updateTask: Task ${id} updated in local state`);
+      
     } catch (error) {
       console.error("❌ updateTask: Error occurred:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to update task";
+      const errorMessage = error instanceof Error ? error.message : "Failed to update task";
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
   },
 
+  /**
+   * Delete Task
+   * Removes a task from Firestore and local state
+   * 
+   * @param id - Task ID to delete
+   */
   deleteTask: async (id) => {
     console.log(`🗑️ deleteTask: Starting to delete task ${id}`);
 
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      // Get current authenticated user
+      const currentUser = auth.currentUser;
 
-      if (authError) throw authError;
-      if (!user) throw new Error("No authenticated user");
+      if (!currentUser) {
+        throw new Error("No authenticated user");
+      }
 
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
+      // Delete from Firestore
+      await deleteTaskFromFirestore(id);
+      console.log(`✅ deleteTask: Task ${id} deleted from Firestore`);
 
-      if (error) throw error;
-
-      console.log(`✅ deleteTask: Task ${id} deleted successfully`);
+      // Update local state
       set((state) => ({
         tasks: state.tasks.filter((task) => task.id !== id),
       }));
+
+      console.log(`✅ deleteTask: Task ${id} removed from local state`);
+      
     } catch (error) {
       console.error("❌ deleteTask: Error occurred:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to delete task";
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete task";
       set({ error: errorMessage });
       throw error;
     }
   },
 
+  /**
+   * Complete Task
+   * Marks a task as completed by updating its status
+   * 
+   * @param id - Task ID to complete
+   */
   completeTask: async (id) => {
     console.log(`✅ completeTask: Starting to complete task ${id}`);
 
     try {
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError) throw authError;
-      if (!user) throw new Error("No authenticated user");
-
-      const { error } = await supabase
-        .from("tasks")
-        .update({ status: "completed" })
-        .eq("id", id)
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      // Use the updateTask method to change status to completed
+      await get().updateTask(id, { status: "completed" });
       console.log(`✅ completeTask: Task ${id} marked as completed`);
-
-      // Update local state immediately
-      set((state) => ({
-        tasks: state.tasks.map((task) =>
-          task.id === id ? { ...task, status: "completed" } : task
-        ),
-      }));
+      
     } catch (error) {
       console.error("❌ completeTask: Error occurred:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to complete task";
+      const errorMessage = error instanceof Error ? error.message : "Failed to complete task";
       set({ error: errorMessage });
       throw error;
     }
   },
 
+  /**
+   * Move Task to Different Status
+   * Updates a task's status (used for drag-and-drop functionality)
+   * 
+   * @param taskId - Task ID to move
+   * @param newStatus - New status for the task
+   */
   moveTask: async (taskId, newStatus) => {
-    console.log(
-      `🎯 moveTask: Called with taskId=${taskId}, newStatus=${newStatus}`
-    );
+    console.log(`🎯 moveTask: Moving task ${taskId} to status ${newStatus}`);
 
     const currentState = get();
-    const currentTasks = currentState.tasks;
-
-    console.log(
-      "📋 moveTask: Current tasks in store:",
-      currentTasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        status: t.status,
-      }))
-    );
-
-    const taskToMove = currentTasks.find((task) => task.id === taskId);
+    const taskToMove = currentState.tasks.find((task) => task.id === taskId);
 
     if (!taskToMove) {
       console.error("❌ moveTask: Task not found!", {
         searchingFor: taskId,
-        availableIds: currentTasks.map((t) => t.id),
-        totalTasks: currentTasks.length,
+        availableIds: currentState.tasks.map((t) => t.id),
       });
       set({ error: `Task ${taskId} not found` });
       return;
@@ -425,94 +289,130 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     });
 
     if (taskToMove.status === newStatus) {
-      console.log(
-        "⚠️ moveTask: Task already in target status, no change needed"
-      );
+      console.log("⚠️ moveTask: Task already in target status, no change needed");
       return;
     }
 
-    // Immediate optimistic update
-    const optimisticTasks = currentTasks.map((task) =>
+    // Optimistic update - update local state immediately
+    const optimisticTasks = currentState.tasks.map((task) =>
       task.id === taskId ? { ...task, status: newStatus } : task
     );
 
     console.log(`🔄 moveTask: Applying optimistic update`);
-    console.log("📊 moveTask: New distribution (optimistic):", {
-      pending: optimisticTasks.filter((t) => t.status === "pending").length,
-      inProgress: optimisticTasks.filter((t) => t.status === "in-progress")
-        .length,
-      completed: optimisticTasks.filter((t) => t.status === "completed").length,
-    });
-
     set({ tasks: optimisticTasks });
 
     try {
-      console.log(`🚀 moveTask: Updating database for task ${taskId}...`);
-
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
-
-      if (authError) throw authError;
-      if (!user) throw new Error("No authenticated user");
-
-      const { error } = await supabase
-        .from("tasks")
-        .update({ status: newStatus })
-        .eq("id", taskId)
-        .eq("user_id", user.id);
-
-      if (error) {
-        console.error("❌ moveTask: Database update failed:", error);
-        throw error;
-      }
-
-      console.log(
-        `✅ moveTask: Database updated successfully for task ${taskId}`
-      );
-      console.log(
-        `🎉 moveTask: Task ${taskId} successfully moved from ${taskToMove.status} to ${newStatus}`
-      );
+      // Update in Firestore
+      console.log(`🚀 moveTask: Updating Firestore for task ${taskId}...`);
+      await updateTaskInFirestore(taskId, { status: newStatus });
+      
+      console.log(`✅ moveTask: Task ${taskId} successfully moved to ${newStatus}`);
+      
     } catch (error) {
-      console.error(
-        "❌ moveTask: Database error, reverting optimistic update:",
-        error
-      );
-
-      // Revert optimistic update
-      set({ tasks: currentTasks });
-
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to move task";
+      console.error("❌ moveTask: Firestore update failed, reverting optimistic update:", error);
+      
+      // Revert optimistic update on error
+      set({ tasks: currentState.tasks });
+      
+      const errorMessage = error instanceof Error ? error.message : "Failed to move task";
       set({ error: errorMessage });
-
       throw error;
     }
   },
 
+  /**
+   * Set Tasks
+   * Directly sets the tasks array (used by real-time updates)
+   * 
+   * @param tasks - Array of tasks to set
+   */
   setTasks: (tasks) => {
     console.log("📋 setTasks: Setting tasks in store:", tasks.length, "tasks");
     set({ tasks });
   },
 
+  /**
+   * Set Loading State
+   * Updates the loading state
+   * 
+   * @param isLoading - Loading state
+   */
   setLoading: (isLoading) => {
     console.log("⏳ setLoading:", isLoading);
     set({ isLoading });
   },
 
+  /**
+   * Set Error State
+   * Updates the error state
+   * 
+   * @param error - Error message or null
+   */
   setError: (error) => {
     console.log("❌ setError:", error);
     set({ error });
   },
 
+  /**
+   * Reset Store
+   * Resets all state to initial values (used when user logs out)
+   */
   reset: () => {
     console.log("🔄 reset: Resetting task store");
+    
+    // Clean up real-time subscription if it exists
+    const { realtimeUnsubscribe } = get();
+    if (realtimeUnsubscribe) {
+      realtimeUnsubscribe();
+    }
+    
     set({
       tasks: [],
       isLoading: false,
       error: null,
       isInitialized: false,
+      realtimeUnsubscribe: null,
     });
+  },
+
+  /**
+   * Setup Real-time Synchronization
+   * Establishes a real-time listener for task updates
+   * 
+   * @param userId - User ID to listen for tasks
+   */
+  setupRealtimeSync: (userId) => {
+    console.log("🔄 setupRealtimeSync: Setting up real-time task synchronization for user:", userId);
+    
+    // Clean up existing subscription if any
+    const { realtimeUnsubscribe } = get();
+    if (realtimeUnsubscribe) {
+      realtimeUnsubscribe();
+    }
+
+    // Set up new real-time listener
+    const unsubscribe = subscribeToUserTasks(userId, (tasks) => {
+      console.log("🔄 Real-time update received:", tasks.length, "tasks");
+      set({ tasks, isInitialized: true });
+    });
+
+    // Store the unsubscribe function
+    set({ realtimeUnsubscribe: unsubscribe });
+    console.log("✅ Real-time synchronization established");
+  },
+
+  /**
+   * Cleanup Real-time Synchronization
+   * Removes the real-time listener
+   */
+  cleanupRealtimeSync: () => {
+    console.log("🧹 cleanupRealtimeSync: Cleaning up real-time synchronization");
+    
+    const { realtimeUnsubscribe } = get();
+    if (realtimeUnsubscribe) {
+      realtimeUnsubscribe();
+      set({ realtimeUnsubscribe: null });
+      console.log("✅ Real-time synchronization cleaned up");
+    }
   },
 }));
