@@ -184,6 +184,7 @@ export const createTask = async (
     const taskDoc = {
       ...taskData,
       userId,
+      estimatedTime: taskData.estimatedTime || 0,
       dueDate: taskData.dueDate
         ? Timestamp.fromDate(new Date(taskData.dueDate))
         : null,

@@ -19,7 +19,8 @@
     "save": "Speichern",
     "apply": "Anwenden",
     "dismiss": "Verwerfen",
-    "complete": "Abschließen"
+    "complete": "Abschließen",
+    "confirm": "Bestätigen"
   },
   "status": {
     "loading": "Wird geladen...",

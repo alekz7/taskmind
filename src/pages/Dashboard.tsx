@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import {
   Plus,
   Clock,
@@ -8,8 +9,10 @@ import {
   Calendar,
   Layout,
   BarChart,
+  Mic,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { toast } from 'react-toastify';
 
 import { useTaskStore } from "../store/taskStore";
 import { useAuthStore } from "../store/authStore";
@@ -22,10 +25,11 @@ import Card, {
   CardTitle,
 } from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import TaskList from "../components/tasks/TaskList";
 import TaskForm from "../components/tasks/TaskForm";
 import AISuggestionList from "../components/ai/AISuggestionList";
-import { ta } from "date-fns/locale";
+import DraggableTaskList from "../components/dashboard/DraggableTaskList";
+import DateUpdateModal from "../components/dashboard/DateUpdateModal";
+import AudioRecorder from "../components/audio/AudioRecorder";
 
 const Dashboard: React.FC = () => {
   const {
@@ -50,6 +54,16 @@ const Dashboard: React.FC = () => {
 
   const [showAddTask, setShowAddTask] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [isDragDisabled, setIsDragDisabled] = useState(false);
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
+  
+  // Modal state for date updates
+  const [dateUpdateModal, setDateUpdateModal] = useState({
+    isOpen: false,
+    task: null as Task | null,
+    isMovingToUpcoming: false,
+    pendingUpdate: null as { taskId: string; targetList: string } | null
+  });
 
   // Fetch tasks when component mounts and user is authenticated
   useEffect(() => {
@@ -74,40 +88,19 @@ const Dashboard: React.FC = () => {
 
   // Filter tasks
   const today = new Date();
-  console.log("📅 Today's date:", new Date(today));
-  console.log("Tasks:", tasks);
+  today.setHours(23, 59, 59, 999); // End of today
+  
   const todayTasks = tasks.filter(
     (task) =>
       task.status !== "completed" &&
       (task.dueDate ? new Date(task.dueDate) <= today : true)
   );
 
-  // I want to see the result to compare all tasks with today in DueDate
-  console.log("📅 Today's tasks:", today);
-  for (const task of tasks) {
-    const taskDueDate = task.dueDate;
-    if (taskDueDate) {
-      const taskDate = new Date(taskDueDate);
-      // console.log(
-      //   `Task ID: ${task.id}, Due Date: ${taskDueDate}, Task Date: ${taskDate}, Today: ${today}`
-      // );
-      console.log(today, new Date(taskDate));
-      if (new Date(taskDate) <= today) {
-        console.log(`Task ID: ${task.id} is due today or overdue`);
-      } else {
-        console.log(`Task ID: ${task.id} is not due today`);
-      }
-    } else {
-      console.log(`Task ID: ${task.id} has no due date`);
-    }
-  }
-
   const upcomingTasks = tasks.filter(
     (task) =>
       task.status !== "completed" &&
       (task.dueDate ? new Date(task.dueDate) > today : false)
   );
-  console.log("🔍 Upcoming tasks:", upcomingTasks);
 
   const completedTasks = tasks
     .filter((task) => task.status === "completed")
@@ -135,8 +128,10 @@ const Dashboard: React.FC = () => {
     try {
       await addTask(taskData);
       setShowAddTask(false);
+      toast.success('Task created successfully!');
     } catch (error) {
       console.error("Failed to add task:", error);
+      toast.error('Failed to create task');
     }
   };
 
@@ -147,8 +142,10 @@ const Dashboard: React.FC = () => {
       try {
         await updateTask(editingTaskId, taskData);
         setEditingTaskId(null);
+        toast.success('Task updated successfully!');
       } catch (error) {
         console.error("Failed to update task:", error);
+        toast.error('Failed to update task');
       }
     }
   };
@@ -160,6 +157,121 @@ const Dashboard: React.FC = () => {
 
   const handleCancelEdit = () => {
     setEditingTaskId(null);
+  };
+
+  const handleDragEnd = async (result: DropResult) => {
+    console.log('🎯 Dashboard drag end:', result);
+    
+    const { source, destination, draggableId } = result;
+    
+    // Drop outside valid drop zone
+    if (!destination) {
+      console.log('❌ No destination - drag cancelled');
+      return;
+    }
+    
+    // Drop in same position
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      console.log('❌ Same position - no change needed');
+      return;
+    }
+
+    const draggedTask = tasks.find(task => task.id === draggableId);
+    if (!draggedTask) {
+      console.error('❌ Task not found:', draggableId);
+      return;
+    }
+
+    console.log('🔄 Task movement:', {
+      task: draggedTask.title,
+      from: source.droppableId,
+      to: destination.droppableId
+    });
+
+    // Handle movement between today and upcoming
+    if (source.droppableId !== destination.droppableId) {
+      if (destination.droppableId === 'upcoming-tasks') {
+        // Moving from today to upcoming - show modal for date selection
+        setDateUpdateModal({
+          isOpen: true,
+          task: draggedTask,
+          isMovingToUpcoming: true,
+          pendingUpdate: { taskId: draggableId, targetList: 'upcoming' }
+        });
+      } else if (destination.droppableId === 'today-tasks') {
+        // Moving from upcoming to today - auto-set to today
+        const todayDate = format(new Date(), 'yyyy-MM-dd');
+        setIsDragDisabled(true);
+        
+        try {
+          await updateTask(draggableId, { dueDate: todayDate });
+          toast.success('Task moved to today!');
+        } catch (error) {
+          console.error('Failed to move task:', error);
+          toast.error('Failed to move task');
+        } finally {
+          setIsDragDisabled(false);
+        }
+      }
+    }
+  };
+
+  const handleDateUpdateConfirm = async (newDueDate: string) => {
+    const { pendingUpdate } = dateUpdateModal;
+    
+    if (!pendingUpdate) return;
+
+    setIsDragDisabled(true);
+    
+    try {
+      await updateTask(pendingUpdate.taskId, { dueDate: newDueDate });
+      toast.success('Task date updated successfully!');
+    } catch (error) {
+      console.error('Failed to update task date:', error);
+      toast.error('Failed to update task date');
+    } finally {
+      setIsDragDisabled(false);
+      setDateUpdateModal({
+        isOpen: false,
+        task: null,
+        isMovingToUpcoming: false,
+        pendingUpdate: null
+      });
+    }
+  };
+
+  const handleDateUpdateCancel = () => {
+    setDateUpdateModal({
+      isOpen: false,
+      task: null,
+      isMovingToUpcoming: false,
+      pendingUpdate: null
+    });
+  };
+
+  const handleAudioTranscription = async (transcribedText: string) => {
+    try {
+      // Create a task from the transcribed text
+      const taskData = {
+        title: transcribedText,
+        description: '',
+        dueDate: format(new Date(), 'yyyy-MM-dd'), // Set to today by default
+        priority: 'medium' as const,
+        status: 'pending' as const,
+        category: '',
+        estimatedTime: undefined,
+        actualTime: undefined,
+      };
+
+      await addTask(taskData);
+      toast.success('Task created from voice recording!');
+    } catch (error) {
+      console.error('Failed to create task from audio:', error);
+      toast.error('Failed to create task from audio');
+    }
   };
 
   // Task metrics
@@ -214,7 +326,14 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-4 md:mt-0">
+        <div className="mt-4 md:mt-0 flex space-x-3">
+          <Button
+            variant="secondary"
+            leftIcon={<Mic size={18} />}
+            onClick={() => setShowAudioRecorder(true)}
+          >
+            Voice to Task
+          </Button>
           <Button
             variant={showAddTask ? "ghost" : "primary"}
             leftIcon={showAddTask ? <Clock size={18} /> : <Plus size={18} />}
@@ -247,6 +366,13 @@ const Dashboard: React.FC = () => {
             onSubmit={handleUpdateTask}
             onCancel={handleCancelEdit}
           />
+        </div>
+      )}
+
+      {/* Drag disabled indicator */}
+      {isDragDisabled && (
+        <div className="mb-4 p-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-md text-sm text-center">
+          ⏳ Drag and drop temporarily disabled during operations...
         </div>
       )}
 
@@ -341,66 +467,88 @@ const Dashboard: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Today's Tasks */}
-        <Card className="lg:col-span-1 h-[600px]">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="mr-2 h-5 w-5 text-gray-500" />
-              {t("sections.todayTasks.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[calc(600px-60px)]">
-            <TaskList
-              tasks={todayTasks}
-              title=""
-              emptyMessage={t("sections.todayTasks.empty")}
-              onEdit={handleEditTask}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-            />
-          </CardContent>
-        </Card>
+      {/* Main Content with Drag and Drop */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Today's Tasks */}
+          <Card className="lg:col-span-1 h-[600px]">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Calendar className="mr-2 h-5 w-5 text-gray-500" />
+                {t("sections.todayTasks.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(600px-60px)] p-4">
+              <DraggableTaskList
+                tasks={todayTasks}
+                title=""
+                emptyMessage={t("sections.todayTasks.empty")}
+                droppableId="today-tasks"
+                onEdit={handleEditTask}
+                onDelete={deleteTask}
+                onComplete={completeTask}
+                isDragDisabled={isDragDisabled}
+              />
+            </CardContent>
+          </Card>
 
-        {/* Upcoming Tasks */}
-        <Card className="lg:col-span-1 h-[600px]">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Clock className="mr-2 h-5 w-5 text-gray-500" />
-              {t("sections.upcomingTasks.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[calc(600px-60px)]">
-            <TaskList
-              tasks={upcomingTasks}
-              title=""
-              emptyMessage={t("sections.upcomingTasks.empty")}
-              onEdit={handleEditTask}
-              onDelete={deleteTask}
-              onComplete={completeTask}
-            />
-          </CardContent>
-        </Card>
+          {/* Upcoming Tasks */}
+          <Card className="lg:col-span-1 h-[600px]">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Clock className="mr-2 h-5 w-5 text-gray-500" />
+                {t("sections.upcomingTasks.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(600px-60px)] p-4">
+              <DraggableTaskList
+                tasks={upcomingTasks}
+                title=""
+                emptyMessage={t("sections.upcomingTasks.empty")}
+                droppableId="upcoming-tasks"
+                onEdit={handleEditTask}
+                onDelete={deleteTask}
+                onComplete={completeTask}
+                isDragDisabled={isDragDisabled}
+              />
+            </CardContent>
+          </Card>
 
-        {/* AI Suggestions */}
-        <Card className="lg:col-span-1 h-[600px]">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Sparkles className="mr-2 h-5 w-5 text-primary-500" />
-              {t("sections.aiInsights.title")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[calc(600px-60px)]">
-            <AISuggestionList
-              suggestions={suggestions}
-              isLoading={suggestionsLoading}
-              onApply={applySuggestion}
-              onDismiss={dismissSuggestion}
-            />
-          </CardContent>
-        </Card>
-      </div>
+          {/* AI Suggestions */}
+          <Card className="lg:col-span-1 h-[600px]">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Sparkles className="mr-2 h-5 w-5 text-primary-500" />
+                {t("sections.aiInsights.title")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="h-[calc(600px-60px)]">
+              <AISuggestionList
+                suggestions={suggestions}
+                isLoading={suggestionsLoading}
+                onApply={applySuggestion}
+                onDismiss={dismissSuggestion}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </DragDropContext>
+
+      {/* Date Update Modal */}
+      <DateUpdateModal
+        isOpen={dateUpdateModal.isOpen}
+        onClose={handleDateUpdateCancel}
+        task={dateUpdateModal.task}
+        onConfirm={handleDateUpdateConfirm}
+        isMovingToUpcoming={dateUpdateModal.isMovingToUpcoming}
+      />
+
+      {/* Audio Recorder Modal */}
+      <AudioRecorder
+        isOpen={showAudioRecorder}
+        onClose={() => setShowAudioRecorder(false)}
+        onTranscriptionComplete={handleAudioTranscription}
+      />
     </div>
   );
 };

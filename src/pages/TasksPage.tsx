@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { PlusCircle, CircleDot, CheckCircle, Clock, Search, Filter } from 'lucide-react';
+import { PlusCircle, CircleDot, CheckCircle, Clock, Search, Filter, Mic } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
+import { format } from 'date-fns';
 
 import { useTaskStore } from '../store/taskStore';
 import { useAuthStore } from '../store/authStore';
@@ -12,6 +14,7 @@ import Input from '../components/ui/Input';
 import Card, { CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import TaskCard from '../components/tasks/TaskCard';
 import TaskForm from '../components/tasks/TaskForm';
+import AudioRecorder from '../components/audio/AudioRecorder';
 
 const TasksPage: React.FC = () => {
   const { tasks, addTask, updateTask, deleteTask, completeTask, moveTask, fetchTasks, isLoading, isInitialized } = useTaskStore();
@@ -23,6 +26,7 @@ const TasksPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
   const [isDragDisabled, setIsDragDisabled] = useState(true);
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   
   // Fetch tasks when component mounts and user is authenticated
   useEffect(() => {
@@ -98,6 +102,9 @@ const TasksPage: React.FC = () => {
     try {
       await addTask(taskData);
       setShowAddTask(false);
+      toast.success('Task created successfully!');
+    } catch (error) {
+      toast.error('Failed to create task');
     } finally {
       // Re-enable drag after a short delay
       setTimeout(() => setIsDragDisabled(false), 500);
@@ -111,6 +118,9 @@ const TasksPage: React.FC = () => {
       try {
         await updateTask(editingTaskId, taskData);
         setEditingTaskId(null);
+        toast.success('Task updated successfully!');
+      } catch (error) {
+        toast.error('Failed to update task');
       } finally {
         setTimeout(() => setIsDragDisabled(false), 500);
       }
@@ -126,6 +136,28 @@ const TasksPage: React.FC = () => {
   const handleCancelEdit = () => {
     console.log('❌ TasksPage: Cancelling edit');
     setEditingTaskId(null);
+  };
+
+  const handleAudioTranscription = async (transcribedText: string) => {
+    try {
+      // Create a task from the transcribed text
+      const taskData = {
+        title: transcribedText,
+        description: '',
+        dueDate: format(new Date(), 'yyyy-MM-dd'), // Set to today by default
+        priority: 'medium' as const,
+        status: 'pending' as const,
+        category: '',
+        estimatedTime: undefined,
+        actualTime: undefined,
+      };
+
+      await addTask(taskData);
+      toast.success('Task created from voice recording!');
+    } catch (error) {
+      console.error('Failed to create task from audio:', error);
+      toast.error('Failed to create task from audio');
+    }
   };
   
   const handleDragStart = (start: any) => {
@@ -275,7 +307,14 @@ const TasksPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-300 mt-1">{t('subtitle')}</p>
         </div>
         
-        <div className="mt-4 md:mt-0">
+        <div className="mt-4 md:mt-0 flex space-x-3">
+          <Button
+            variant="secondary"
+            leftIcon={<Mic size={18} />}
+            onClick={() => setShowAudioRecorder(true)}
+          >
+            Voice to Task
+          </Button>
           <Button
             variant="primary"
             leftIcon={<PlusCircle size={18} />}
@@ -597,6 +636,13 @@ const TasksPage: React.FC = () => {
           </div>
         </DragDropContext>
       )}
+
+      {/* Audio Recorder Modal */}
+      <AudioRecorder
+        isOpen={showAudioRecorder}
+        onClose={() => setShowAudioRecorder(false)}
+        onTranscriptionComplete={handleAudioTranscription}
+      />
     </div>
   );
 };
